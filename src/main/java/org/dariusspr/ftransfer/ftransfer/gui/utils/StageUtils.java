@@ -17,6 +17,9 @@ public class StageUtils {
             stage.setY(mouseEvent.getScreenY() + deltaPos.y);
 
         });
+        node.setOnMouseReleased(mouseEvent -> {
+            node.setCursor(Cursor.DEFAULT);
+        });
     }
     static class DeltaPos {double x, y;}
 }
