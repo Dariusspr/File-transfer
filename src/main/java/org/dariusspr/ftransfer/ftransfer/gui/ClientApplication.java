@@ -1,8 +1,12 @@
 package org.dariusspr.ftransfer.ftransfer.gui;
 
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -49,5 +53,9 @@ public class ClientApplication extends Application {
             // TODO: improve exception handling
             e.printStackTrace();
         }
+    }
+
+    public static Stage getStage() {
+        return stage;
     }
 }
