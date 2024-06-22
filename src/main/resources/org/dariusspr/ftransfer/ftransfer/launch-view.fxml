@@ -24,7 +24,7 @@
             <TextField fx:id="tfIP" layoutX="85.0" layoutY="63.0" promptText="IP address" text="localhost" />
             <TextField fx:id="tfPort" layoutX="85.0" layoutY="101.0" promptText="port number" text="8888" />
             <TextField fx:id="tfName" layoutX="85.0" layoutY="25.0" promptText="client name" />
-            <Button layoutX="85.0" layoutY="147.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="171.0" style="-fx-background-color: white;" text="Launch" />
+            <Button fx:id="btnLaunch" layoutX="85.0" layoutY="147.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="171.0" style="-fx-background-color: white;" text="Launch" />
          </children>
       </AnchorPane>
    </children>
