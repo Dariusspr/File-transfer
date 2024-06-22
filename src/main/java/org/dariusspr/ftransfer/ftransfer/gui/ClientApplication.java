@@ -55,6 +55,10 @@ public class ClientApplication extends Application {
         }
     }
 
+    public static void close() {
+        stage.close();
+    }
+
     public static Stage getStage() {
         return stage;
     }

@@ -1,5 +1,6 @@
 package org.dariusspr.ftransfer.ftransfer.gui.controller;
 
+import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -9,6 +10,8 @@ import javafx.scene.layout.AnchorPane;
 
 import javafx.fxml.Initializable;
 import org.dariusspr.ftransfer.ftransfer.Data.ClientInfo;
+import org.dariusspr.ftransfer.ftransfer.gui.ClientApplication;
+
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -35,10 +38,15 @@ public class LauncherController implements Initializable {
     @FXML
     private Button btnLaunch;
 
+    @FXML
+    private Button btnClose;
+
     private ClientInfo clientInfo;
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         makeDraggable(bar, getStage());
+
+        btnClose.setOnMouseClicked(e -> ClientApplication.close());
 
         clientInfo = new ClientInfo();
         btnLaunch.setOnMouseClicked(this::launch);

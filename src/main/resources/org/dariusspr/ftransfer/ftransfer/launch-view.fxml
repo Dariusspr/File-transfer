@@ -16,7 +16,7 @@
                   <Font name="Arial Bold" size="22.0" />
                </font>
             </Text>
-            <Button alignment="CENTER" contentDisplay="CENTER" layoutX="289.0" layoutY="7.0" mnemonicParsing="false" prefHeight="15.0" prefWidth="13.0" style="-fx-background-color: white;" text="X" />
+            <Button fx:id="btnClose" alignment="CENTER" contentDisplay="CENTER" layoutX="289.0" layoutY="7.0" mnemonicParsing="false" prefHeight="15.0" prefWidth="13.0" style="-fx-background-color: white;" text="X" />
          </children>
       </AnchorPane>
       <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="171.0" prefWidth="321.0" style="-fx-background-radius: 15; -fx-background-color: #282828;">
