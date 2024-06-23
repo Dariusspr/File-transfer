@@ -18,12 +18,7 @@ import java.util.Objects;
 public class ClientApplication extends Application {
     private static Stage stage;
 
-    private static Scene getLauncherScene() throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(Launcher.class.getResource("launch-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load());
-        scene.setFill(Color.TRANSPARENT);
-        return  scene;
-    }
+
 
     @Override
     public void start(Stage aStage) {
@@ -41,25 +36,43 @@ public class ClientApplication extends Application {
 
     public static void setScene(SceneType type) {
         try {
+            Scene scene;
             if (type == SceneType.LAUNCHER) {
-                Scene scene = getLauncherScene();
-                stage.setScene(scene);
+                scene = getLauncherScene();
             } else if (type == SceneType.MAIN) {
-                // TODO: change to main
+                scene = getMainScene();
             } else {
                 throw new IllegalStateException("Illegal scene type");
             }
+            stage.setScene((scene));
+
         } catch (IOException e) {
             // TODO: improve exception handling
             e.printStackTrace();
         }
     }
 
+
+
     public static void close() {
-        stage.close();
+        stage.close(); // TODO: proper way
     }
 
     public static Stage getStage() {
         return stage;
+    }
+
+
+    private static Scene getLauncherScene() throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(Launcher.class.getResource("launch-view.fxml"));
+        Scene scene = new Scene(fxmlLoader.load());
+        scene.setFill(Color.TRANSPARENT);
+        return  scene;
+    }
+    private static Scene getMainScene() throws IOException{
+        FXMLLoader fxmlLoader = new FXMLLoader(Launcher.class.getResource("main-view.fxml"));
+        Scene scene = new Scene(fxmlLoader.load());
+        scene.setFill(Color.TRANSPARENT);
+        return  scene;
     }
 }

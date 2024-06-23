@@ -11,12 +11,14 @@ import javafx.scene.layout.AnchorPane;
 import javafx.fxml.Initializable;
 import org.dariusspr.ftransfer.ftransfer.Data.ClientInfo;
 import org.dariusspr.ftransfer.ftransfer.gui.ClientApplication;
+import org.dariusspr.ftransfer.ftransfer.gui.SceneType;
 
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
 import static org.dariusspr.ftransfer.ftransfer.gui.ClientApplication.getStage;
+import static org.dariusspr.ftransfer.ftransfer.gui.ClientApplication.setScene;
 import static org.dariusspr.ftransfer.ftransfer.gui.utils.AlertUtils.createErrorAlert;
 import static org.dariusspr.ftransfer.ftransfer.gui.utils.StageUtils.makeDraggable;
 
@@ -59,7 +61,7 @@ public class LauncherController implements Initializable {
             return;
         }
         // TODO: save clientInfo
-        // TODO: change view
+        setScene(SceneType.MAIN);
     }
 
     private boolean readClientInfo() {
