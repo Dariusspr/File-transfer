@@ -60,7 +60,8 @@ public class LauncherController implements Initializable {
             createErrorAlert("Invalid info", "Invalid client details");
             return;
         }
-        // TODO: save clientInfo
+        ClientLocalData localData = ClientLocalData.getData();
+        localData.updateClientInfo(clientInfo);
         setScene(SceneType.MAIN);
     }
 

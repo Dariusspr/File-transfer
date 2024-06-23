@@ -40,5 +40,8 @@ public class MainController implements Initializable {
         makeDraggable(bar, getStage());
 
         btnClose.setOnMouseClicked(e -> ClientApplication.close());
+
+        // TODO: initialize combobox
+        //
     }
 }
