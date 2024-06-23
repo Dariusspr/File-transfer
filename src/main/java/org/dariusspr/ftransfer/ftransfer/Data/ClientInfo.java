@@ -36,4 +36,15 @@ public class ClientInfo {
     public void setPort(String port) {
         this.port = port;
     }
+
+    public void update(ClientInfo newInfo) {
+        name = newInfo.name;
+        ip = newInfo.ip;
+        port = newInfo.port;
+    }
+
+    public static boolean isValid(ClientInfo clientInfo) {
+        // TODO: add better validation
+        return !(clientInfo.name.isEmpty() || clientInfo.ip.isEmpty() || clientInfo.port.isEmpty());
+    }
 }

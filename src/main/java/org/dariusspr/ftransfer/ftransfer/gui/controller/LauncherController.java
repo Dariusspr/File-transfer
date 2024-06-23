@@ -1,6 +1,5 @@
 package org.dariusspr.ftransfer.ftransfer.gui.controller;
 
-import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -10,6 +9,7 @@ import javafx.scene.layout.AnchorPane;
 
 import javafx.fxml.Initializable;
 import org.dariusspr.ftransfer.ftransfer.Data.ClientInfo;
+import org.dariusspr.ftransfer.ftransfer.Data.ClientLocalData;
 import org.dariusspr.ftransfer.ftransfer.gui.ClientApplication;
 import org.dariusspr.ftransfer.ftransfer.gui.SceneType;
 
@@ -69,16 +69,11 @@ public class LauncherController implements Initializable {
         String ip = tfIP.getText();
         String port = tfPort.getText();
 
-        // TODO: add better validation
-        if (name.isEmpty() || ip.isEmpty() || port.isEmpty()) {
-            return false;
-        }
-
         clientInfo.setName(name);
         clientInfo.setIp(ip);
         clientInfo.setPort(port);
 
-        return true;
+        return ClientInfo.isValid(clientInfo);
     }
 
 }
