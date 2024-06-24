@@ -1,19 +1,14 @@
-package org.dariusspr.ftransfer.ftransfer.gui;
+package org.dariusspr.ftransfer.ftransfer_client.gui;
 
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Cursor;
-import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import org.dariusspr.ftransfer.ftransfer.Launcher;
+import org.dariusspr.ftransfer.ftransfer_client.Launcher;
 
 import java.io.IOException;
-import java.util.Objects;
 
 public class ClientApplication extends Application {
     private static Stage stage;

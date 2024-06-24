@@ -1,4 +1,4 @@
-package org.dariusspr.ftransfer.ftransfer.gui.utils;
+package org.dariusspr.ftransfer.ftransfer_client.gui.utils;
 
 import javafx.scene.control.Alert;
 

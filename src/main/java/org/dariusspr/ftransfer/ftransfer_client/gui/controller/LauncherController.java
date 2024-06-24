@@ -1,4 +1,4 @@
-package org.dariusspr.ftransfer.ftransfer.gui.controller;
+package org.dariusspr.ftransfer.ftransfer_client.gui.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -8,19 +8,19 @@ import javafx.scene.layout.AnchorPane;
 
 
 import javafx.fxml.Initializable;
-import org.dariusspr.ftransfer.ftransfer.Data.ClientInfo;
-import org.dariusspr.ftransfer.ftransfer.Data.ClientLocalData;
-import org.dariusspr.ftransfer.ftransfer.gui.ClientApplication;
-import org.dariusspr.ftransfer.ftransfer.gui.SceneType;
+import org.dariusspr.ftransfer.ftransfer_client.data.ClientInfo;
+import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
+import org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication;
+import org.dariusspr.ftransfer.ftransfer_client.gui.SceneType;
 
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import static org.dariusspr.ftransfer.ftransfer.gui.ClientApplication.getStage;
-import static org.dariusspr.ftransfer.ftransfer.gui.ClientApplication.setScene;
-import static org.dariusspr.ftransfer.ftransfer.gui.utils.AlertUtils.createErrorAlert;
-import static org.dariusspr.ftransfer.ftransfer.gui.utils.StageUtils.makeDraggable;
+import static org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication.getStage;
+import static org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication.setScene;
+import static org.dariusspr.ftransfer.ftransfer_client.gui.utils.AlertUtils.createErrorAlert;
+import static org.dariusspr.ftransfer.ftransfer_client.gui.utils.StageUtils.makeDraggable;
 
 public class LauncherController implements Initializable {
 

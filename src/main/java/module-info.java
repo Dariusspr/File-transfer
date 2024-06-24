@@ -3,12 +3,12 @@ module org.dariusspr.ftransfer.ftransfer {
     requires javafx.fxml;
 
 
-    opens org.dariusspr.ftransfer.ftransfer to javafx.fxml;
-    exports org.dariusspr.ftransfer.ftransfer;
+    opens org.dariusspr.ftransfer.ftransfer_client to javafx.fxml;
+    exports org.dariusspr.ftransfer.ftransfer_client;
 
-    opens org.dariusspr.ftransfer.ftransfer.gui to javafx.fxml;
-    exports org.dariusspr.ftransfer.ftransfer.gui;
+    opens org.dariusspr.ftransfer.ftransfer_client.gui to javafx.fxml;
+    exports org.dariusspr.ftransfer.ftransfer_client.gui;
 
-    opens org.dariusspr.ftransfer.ftransfer.gui.controller to javafx.fxml;
-    exports org.dariusspr.ftransfer.ftransfer.gui.controller;
+    opens org.dariusspr.ftransfer.ftransfer_client.gui.controller to javafx.fxml;
+    exports org.dariusspr.ftransfer.ftransfer_client.gui.controller;
 }

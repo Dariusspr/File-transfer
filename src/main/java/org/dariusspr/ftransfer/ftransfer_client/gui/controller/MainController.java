@@ -1,6 +1,5 @@
-package org.dariusspr.ftransfer.ftransfer.gui.controller;
+package org.dariusspr.ftransfer.ftransfer_client.gui.controller;
 
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -8,17 +7,17 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
-import org.dariusspr.ftransfer.ftransfer.Data.ClientInfo;
-import org.dariusspr.ftransfer.ftransfer.Data.ClientLocalData;
-import org.dariusspr.ftransfer.ftransfer.gui.ClientApplication;
-import org.dariusspr.ftransfer.ftransfer.gui.utils.ReceiverMenuItem;
+import org.dariusspr.ftransfer.ftransfer_client.data.ClientInfo;
+import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
+import org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication;
+import org.dariusspr.ftransfer.ftransfer_client.gui.utils.ReceiverMenuItem;
 
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-import static org.dariusspr.ftransfer.ftransfer.gui.ClientApplication.getStage;
-import static org.dariusspr.ftransfer.ftransfer.gui.utils.StageUtils.makeDraggable;
+import static org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication.getStage;
+import static org.dariusspr.ftransfer.ftransfer_client.gui.utils.StageUtils.makeDraggable;
 
 public class MainController implements Initializable {
         @FXML

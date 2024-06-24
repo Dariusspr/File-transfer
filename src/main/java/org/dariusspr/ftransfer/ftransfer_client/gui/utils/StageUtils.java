@@ -1,4 +1,4 @@
-package org.dariusspr.ftransfer.ftransfer.gui.utils;
+package org.dariusspr.ftransfer.ftransfer_client.gui.utils;
 
 import javafx.scene.Cursor;
 import javafx.scene.Node;

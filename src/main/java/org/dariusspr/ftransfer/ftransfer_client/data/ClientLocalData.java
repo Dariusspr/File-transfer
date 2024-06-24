@@ -1,4 +1,4 @@
-package org.dariusspr.ftransfer.ftransfer.Data;
+package org.dariusspr.ftransfer.ftransfer_client.data;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

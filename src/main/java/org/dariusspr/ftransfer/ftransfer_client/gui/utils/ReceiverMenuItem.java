@@ -1,8 +1,8 @@
-package org.dariusspr.ftransfer.ftransfer.gui.utils;
+package org.dariusspr.ftransfer.ftransfer_client.gui.utils;
 
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.CustomMenuItem;
-import org.dariusspr.ftransfer.ftransfer.Data.ClientInfo;
+import org.dariusspr.ftransfer.ftransfer_client.data.ClientInfo;
 
 public class ReceiverMenuItem extends CustomMenuItem {
     private final CheckBox checkBox;

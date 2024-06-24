@@ -1,4 +1,4 @@
-package org.dariusspr.ftransfer.ftransfer.Data;
+package org.dariusspr.ftransfer.ftransfer_client.data;
 
 public class ClientInfo {
     private String name;
