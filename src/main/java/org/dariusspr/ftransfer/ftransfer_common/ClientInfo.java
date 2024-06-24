@@ -2,12 +2,13 @@ package org.dariusspr.ftransfer.ftransfer_common;
 
 public class ClientInfo {
     private String name;
-    private String ip, port;
+    private String ip;
+    private int port;
 
     public ClientInfo() {
     }
 
-    public ClientInfo(String name, String ip, String port) {
+    public ClientInfo(String name, String ip, int port) {
         this.name = name;
         this.ip = ip;
         this.port = port;
@@ -29,11 +30,11 @@ public class ClientInfo {
         this.ip = ip;
     }
 
-    public String getPort() {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(String port) {
+    public void setPort(int port) {
         this.port = port;
     }
 
@@ -45,6 +46,6 @@ public class ClientInfo {
 
     public static boolean isValid(ClientInfo clientInfo) {
         // TODO: add better validation
-        return !(clientInfo.name.isEmpty() || clientInfo.ip.isEmpty() || clientInfo.port.isEmpty());
+        return !(clientInfo.name.isEmpty() || clientInfo.ip.isEmpty() || clientInfo.port < 0 || clientInfo.port > 65535);
     }
 }

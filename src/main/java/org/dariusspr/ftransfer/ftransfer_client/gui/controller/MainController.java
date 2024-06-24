@@ -57,9 +57,9 @@ public class MainController implements Initializable {
         receivers = ClientLocalData.getData().getAvailableClients();
 
         // Temporary data for testing purposes
-        receivers.add(new ClientInfo("client 1", "localhost", "9999"));
-        receivers.add(new ClientInfo("client 2", "localhost", "2121"));
-        receivers.add(new ClientInfo("client 3", "localhost", "1111"));
+        receivers.add(new ClientInfo("client 1", "localhost", 9999));
+        receivers.add(new ClientInfo("client 2", "localhost", 2121));
+        receivers.add(new ClientInfo("client 3", "localhost", 1111));
 
         updateReceiversMenu(receivers);
 

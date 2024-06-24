@@ -68,7 +68,12 @@ public class LauncherController implements Initializable {
     private boolean readClientInfo() {
         String name = tfName.getText();
         String ip = tfIP.getText();
-        String port = tfPort.getText();
+        int port;
+        try {
+            port = Integer.parseInt(tfPort.getText());
+        } catch (NumberFormatException e) {
+            return false;
+        }
 
         clientInfo.setName(name);
         clientInfo.setIp(ip);
