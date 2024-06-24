@@ -8,7 +8,7 @@ import javafx.scene.layout.AnchorPane;
 
 
 import javafx.fxml.Initializable;
-import org.dariusspr.ftransfer.ftransfer_client.data.ClientInfo;
+import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
 import org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication;
 import org.dariusspr.ftransfer.ftransfer_client.gui.SceneType;

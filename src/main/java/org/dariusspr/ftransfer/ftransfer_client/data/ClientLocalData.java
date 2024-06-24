@@ -2,6 +2,7 @@ package org.dariusspr.ftransfer.ftransfer_client.data;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 
 public class ClientLocalData {
     private static final ClientLocalData localData = new ClientLocalData();
