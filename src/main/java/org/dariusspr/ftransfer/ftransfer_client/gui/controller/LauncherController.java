@@ -63,7 +63,10 @@ public class LauncherController implements Initializable {
         }
         ClientLocalData localData = ClientLocalData.getData();
         localData.updateClientInfo(clientInfo);
-        ServerConnection.get().start();
+        if (!ServerConnection.get().start()) {
+            createErrorAlert("Server connection failure", "Failed to connect to server");
+            return;
+        }
         setScene(SceneType.MAIN);
     }
 
