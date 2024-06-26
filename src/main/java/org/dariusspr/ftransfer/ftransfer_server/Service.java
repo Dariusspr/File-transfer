@@ -15,6 +15,7 @@ public class Service{
     private volatile boolean isRunning = false;
     private final Thread listenerThread = new Thread(this::listen);
     private ServerSocket serverSocket;
+    private ClientsManager clientsManager = ClientsManager.get();
 
     private Service() { }
 
@@ -33,6 +34,7 @@ public class Service{
             e.printStackTrace();
         }
 
+        clientsManager.start();
         isRunning = true;
         listenerThread.start();
     }
@@ -52,15 +54,18 @@ public class Service{
     }
 
     private void handleClientRegistration(Socket socket) {
-        try (ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream())) {
+        try {
+            ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
             Object receivedObj = objectInputStream.readObject(); // Read ClientInfo object
+
             if (receivedObj instanceof ClientInfo clientInfo) {
                 ConnectedClient connectedClient = new ConnectedClient(clientInfo, socket);
-                ServerData.getData().getConnectedClients().add(connectedClient);
-                System.out.println(connectedClient.getName() + connectedClient.getPort() + " is registered");
+                connectedClient.setObjectInputStream(objectInputStream);
+                clientsManager.addClient(connectedClient);
             } else {
                 throw new ClassNotFoundException();
             }
+
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             // TODO: improve
@@ -73,6 +78,7 @@ public class Service{
         }
 
         isRunning = false;
+        clientsManager.stop();
         try {
             serverSocket.close();
         } catch (IOException e) {
