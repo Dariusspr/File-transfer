@@ -8,6 +8,7 @@ import javafx.scene.layout.AnchorPane;
 
 
 import javafx.fxml.Initializable;
+import org.dariusspr.ftransfer.ftransfer_client.service.ServerConnection;
 import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
 import org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication;
@@ -62,6 +63,7 @@ public class LauncherController implements Initializable {
         }
         ClientLocalData localData = ClientLocalData.getData();
         localData.updateClientInfo(clientInfo);
+        ServerConnection.get().start();
         setScene(SceneType.MAIN);
     }
 

@@ -38,6 +38,7 @@ public class Service{
         while(isRunning) {
             try {
                 Socket socket = serverSocket.accept();
+                System.out.println("Connected");
                 // TODO: prepare connections
             } catch (IOException e) {
                 if (!serverSocket.isClosed()) {
