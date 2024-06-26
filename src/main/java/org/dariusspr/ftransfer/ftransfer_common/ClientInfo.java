@@ -1,11 +1,19 @@
 package org.dariusspr.ftransfer.ftransfer_common;
 
-public class ClientInfo {
+import java.io.Serializable;
+
+public class ClientInfo implements Serializable {
     private String name;
     private String ip;
     private int port;
 
     public ClientInfo() {
+    }
+
+    public ClientInfo(ClientInfo info) {
+        this.name = info.getName();
+        this.ip = info.getIp();
+        this.port = info.getPort();
     }
 
     public ClientInfo(String name, String ip, int port) {

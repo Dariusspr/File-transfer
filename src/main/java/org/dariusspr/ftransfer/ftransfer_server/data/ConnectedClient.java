@@ -6,8 +6,8 @@ import java.net.Socket;
 
 public class ConnectedClient extends ClientInfo {
     private final Socket socket;
-    public ConnectedClient(String name, Socket socket) {
-        super(name, socket.getLocalAddress().getHostAddress(), socket.getPort());
+    public ConnectedClient(ClientInfo info, Socket socket) {
+        super(info);
         this.socket = socket;
     }
     public Socket getSocket() {

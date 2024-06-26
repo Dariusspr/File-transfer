@@ -11,7 +11,7 @@ public class ServerConnection {
 
     private boolean isRunning = false;
     private Socket socket;
-    private ObjectOutputStream objectOutputStream;
+    private final ClientLocalData clientLocalData = ClientLocalData.getData();
 
     private ServerConnection() {}
 
@@ -25,7 +25,7 @@ public class ServerConnection {
         }
         try {
             socket = new Socket(ServerInfo.defaultIp, ServerInfo.defaultPort);
-            objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+            register();
         } catch (IOException e) {
             //TODO:
             e.printStackTrace();
@@ -35,6 +35,12 @@ public class ServerConnection {
         return true;
     }
 
+    private void register() throws IOException{
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+        objectOutputStream.writeObject(clientLocalData.getInfo());
+        objectOutputStream.flush();
+        objectOutputStream.close();
+    }
 
     public void stop() {
         if (!isRunning) {
@@ -43,7 +49,6 @@ public class ServerConnection {
         try {
             isRunning = false;
 
-            objectOutputStream.close();
             socket.close();
         } catch (IOException e) {
             //TODO:
