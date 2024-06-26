@@ -5,7 +5,6 @@ import org.dariusspr.ftransfer.ftransfer_server.data.ConnectedClient;
 import org.dariusspr.ftransfer.ftransfer_server.data.ServerData;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -55,12 +54,10 @@ public class Service{
 
     private void handleClientRegistration(Socket socket) {
         try {
-            ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-            Object receivedObj = objectInputStream.readObject(); // Read ClientInfo object
-
+            ConnectedClient connectedClient = new ConnectedClient(socket);
+            Object receivedObj = connectedClient.getObjectInputStream().readObject();
             if (receivedObj instanceof ClientInfo clientInfo) {
-                ConnectedClient connectedClient = new ConnectedClient(clientInfo, socket);
-                connectedClient.setObjectInputStream(objectInputStream);
+                connectedClient.update(clientInfo);
                 clientsManager.addClient(connectedClient);
             } else {
                 throw new ClassNotFoundException();
