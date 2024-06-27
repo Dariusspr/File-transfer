@@ -56,10 +56,7 @@ public class ServerConnection {
                 if (object instanceof ArrayList<?> arrayList) {
                     if (!arrayList.isEmpty() && arrayList.getFirst() instanceof ClientInfo) {
                         @SuppressWarnings("unchecked") ArrayList<ClientInfo> newAvailableList = (ArrayList<ClientInfo>) arrayList;
-                        for (ClientInfo c : newAvailableList) {
-                            System.out.println(c);
-                        }
-                        newAvailableList.remove(clientLocalData.getInfo());
+                        newAvailableList.removeIf(client -> client.toString().equals(clientLocalData.getInfo().toString()));
                         clientLocalData.getAvailableClients().setAll(newAvailableList);
                     }
                 }
