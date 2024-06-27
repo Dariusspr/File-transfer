@@ -1,7 +1,9 @@
 package org.dariusspr.ftransfer.ftransfer_server;
 
+import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 import org.dariusspr.ftransfer.ftransfer_server.data.ConnectedClient;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.Executors;
@@ -9,14 +11,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class ClientsManager {
-    private  static final ClientsManager manager = new ClientsManager();
+    private static final ClientsManager manager = new ClientsManager();
     private final ArrayList<ConnectedClient> connectedClients = new ArrayList<>();
 
     private volatile boolean isRunning = false;
     private volatile boolean isAdded, isRemoved;
 
     ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private static final long CONNECTION_CHECKING_FREQ = 500; // in ms
+    private static final long CONNECTION_CHECKING_FREQ = 1000; // in ms
 
 
     public static ClientsManager get() {
@@ -29,7 +31,7 @@ public class ClientsManager {
         }
 
         isRunning = true;
-        scheduler.scheduleAtFixedRate(this::checkClients, CONNECTION_CHECKING_FREQ, CONNECTION_CHECKING_FREQ, TimeUnit.MICROSECONDS);
+        scheduler.scheduleAtFixedRate(this::checkAll, CONNECTION_CHECKING_FREQ, CONNECTION_CHECKING_FREQ, TimeUnit.MICROSECONDS);
     }
 
 
@@ -54,11 +56,11 @@ public class ClientsManager {
     private ClientsManager() {
     }
 
-    public void checkClients() {
+    public void checkAll() {
         if (isRunning && !connectedClients.isEmpty()) {
 
             Iterator<ConnectedClient> iterator = connectedClients.iterator();
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 ConnectedClient client = iterator.next();
                 if (client.isDisconnected()) {
                     removeClient(iterator, client);
@@ -66,10 +68,29 @@ public class ClientsManager {
             }
 
             if (isRemoved || isAdded) {
-                System.out.println("notify clients");
-                // TODO: alert other clients about change in list
+                updateAll();
                 isRemoved = false;
                 isAdded = false;
+            }
+        }
+    }
+
+    private void updateAll() {
+
+        ArrayList<ClientInfo> infoList = new ArrayList<>();
+        Iterator<ConnectedClient> iterator = connectedClients.iterator();
+        while (iterator.hasNext()) {
+            ConnectedClient client = iterator.next();
+            infoList.add(client.getClientInfo());
+        }
+
+        iterator = connectedClients.iterator();
+        while (iterator.hasNext()) {
+            ConnectedClient client = iterator.next();
+            try {
+                client.getObjectOutputStream().writeObject(infoList);
+            } catch (IOException e) {
+                // TODO;
             }
         }
     }
