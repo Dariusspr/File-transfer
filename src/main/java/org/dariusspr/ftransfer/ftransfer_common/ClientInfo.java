@@ -56,4 +56,13 @@ public class ClientInfo implements Serializable {
         // TODO: add better validation
         return !(clientInfo.name.isEmpty() || clientInfo.ip.isEmpty() || clientInfo.port < 0 || clientInfo.port > 65535);
     }
+
+    @Override
+    public String toString() {
+        return "ClientInfo{" +
+                "name='" + name + '\'' +
+                ", ip='" + ip + '\'' +
+                ", port=" + port +
+                '}';
+    }
 }

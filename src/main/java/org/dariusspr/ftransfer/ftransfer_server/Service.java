@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class Service{
+public class Service {
     private static final Service server = new Service();
     private final ServerData serverData = ServerData.getData();
     private volatile boolean isRunning = false;
@@ -16,11 +16,13 @@ public class Service{
     private ServerSocket serverSocket;
     private ClientsManager clientsManager = ClientsManager.get();
 
-    private Service() { }
+    private Service() {
+    }
 
     public static Service get() {
         return server;
     }
+
     public void start() {
         if (isRunning) {
             throw new IllegalStateException("Server is already running");
@@ -39,10 +41,10 @@ public class Service{
     }
 
     public void listen() {
-        while(isRunning) {
+        while (isRunning) {
             try {
                 Socket socket = serverSocket.accept();
-                new Thread (() -> handleClientRegistration(socket)).start();
+                new Thread(() -> handleClientRegistration(socket)).start();
             } catch (IOException e) {
                 if (!serverSocket.isClosed()) {
                     // TODO: exception reporting
@@ -57,7 +59,7 @@ public class Service{
             ConnectedClient connectedClient = new ConnectedClient(socket);
             Object receivedObj = connectedClient.getObjectInputStream().readObject();
             if (receivedObj instanceof ClientInfo clientInfo) {
-                connectedClient.update(clientInfo);
+                connectedClient.setClientInfo(clientInfo);
                 clientsManager.addClient(connectedClient);
             } else {
                 throw new ClassNotFoundException();
