@@ -1,8 +1,8 @@
 package org.dariusspr.ftransfer.ftransfer_server;
 
 import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
+import org.dariusspr.ftransfer.ftransfer_common.ServerInfo;
 import org.dariusspr.ftransfer.ftransfer_server.data.ConnectedClient;
-import org.dariusspr.ftransfer.ftransfer_server.data.ServerData;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -10,11 +10,10 @@ import java.net.Socket;
 
 public class Service {
     private static final Service server = new Service();
-    private final ServerData serverData = ServerData.getData();
     private volatile boolean isRunning = false;
     private final Thread listenerThread = new Thread(this::listen);
     private ServerSocket serverSocket;
-    private ClientsManager clientsManager = ClientsManager.get();
+    private final ClientsManager clientsManager = ClientsManager.get();
 
     private Service() {
     }
@@ -29,7 +28,7 @@ public class Service {
         }
 
         try {
-            serverSocket = new ServerSocket(serverData.getPort());
+            serverSocket = new ServerSocket(ServerInfo.defaultPort);
         } catch (IOException e) {
             // TODO: exception reporting
             e.printStackTrace();
