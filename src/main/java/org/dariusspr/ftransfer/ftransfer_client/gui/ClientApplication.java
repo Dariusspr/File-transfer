@@ -7,8 +7,8 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.dariusspr.ftransfer.ftransfer_client.Launcher;
+import org.dariusspr.ftransfer.ftransfer_client.service.ReceiverServer;
 import org.dariusspr.ftransfer.ftransfer_client.service.ServerConnection;
-import org.dariusspr.ftransfer.ftransfer_server.Service;
 
 import java.io.IOException;
 
@@ -55,6 +55,7 @@ public class ClientApplication extends Application {
         if (ServerConnection.get().isRunning()) {
             ServerConnection.get().stop();
         }
+        ReceiverServer.get().stop();
         stage.close(); // TODO: proper way
     }
 

@@ -8,6 +8,7 @@ import javafx.scene.layout.AnchorPane;
 
 
 import javafx.fxml.Initializable;
+import org.dariusspr.ftransfer.ftransfer_client.service.ReceiverServer;
 import org.dariusspr.ftransfer.ftransfer_client.service.ServerConnection;
 import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
@@ -63,10 +64,13 @@ public class LauncherController implements Initializable {
         }
         ClientLocalData localData = ClientLocalData.getData();
         localData.updateClientInfo(clientInfo);
+
         if (!ServerConnection.get().start()) {
             createErrorAlert("Server connection failure", "Failed to connect to server");
             return;
         }
+        ReceiverServer.get().start();
+
         setScene(SceneType.MAIN);
     }
 
