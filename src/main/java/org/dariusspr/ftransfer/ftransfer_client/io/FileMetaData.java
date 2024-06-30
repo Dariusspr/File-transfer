@@ -1,4 +1,4 @@
-package org.dariusspr.ftransfer.ftransfer_common;
+package org.dariusspr.ftransfer.ftransfer_client.io;
 
 import java.io.Serializable;
 import java.nio.file.Path;

@@ -1,8 +1,6 @@
 package org.dariusspr.ftransfer.ftransfer_client.io;
 
 
-import org.dariusspr.ftransfer.ftransfer_common.FileMetaData;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -62,9 +60,6 @@ public class FileProcessor {
         }
         metaData = new FileMetaData(fileTree, size);
     }
-
-    
-
 
     public FileMetaData getMetaData() {
         return metaData;
