@@ -1,25 +1,19 @@
 package org.dariusspr.ftransfer.ftransfer_client.service;
 
+import org.dariusspr.ftransfer.ftransfer_client.io.FileIO;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileMetaData;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class FileReceiver {
-    ReceiverManager manager = ReceiverManager.get();
+    private final ReceiverManager manager = ReceiverManager.get();
+    private FileIO fileIO;
     private final Socket socket;
     private ObjectInputStream objectInputStream;
     private DataOutputStream dataOutputStream;
 
     private FileMetaData metaData;
-    private String currentFile;
-    private Path localPathTmp;
-    private FileOutputStream fileOutputStream;
-    private final static String FILE_SAVE_PATH = "/saved/";
-    private final static String FILE_WORKING_MARKER = "_tmp";
 
     private  volatile boolean isFinished;
     private final Thread receiveThread = new Thread(this::receive);
@@ -41,7 +35,7 @@ public class FileReceiver {
                 }
 
             } catch (IOException e) {
-                System.err.println("Failure while working with '" + currentFile + "'");
+                System.err.println("Failure while working with '" + fileIO.getFile() + "'");
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
@@ -51,14 +45,16 @@ public class FileReceiver {
     }
 
     private boolean handleReceivedObject(Object object) throws IOException {
+        fileIO = new FileIO();
+
         switch (object) {
             case String readableMessage -> {
                 if (readableMessage.startsWith("f:")) {
-                    setCurrentFile(readableMessage.substring(2));
+                    fileIO.setFile(readableMessage.substring(2));
                 } else if (readableMessage.startsWith("d:")) {
-                    createDirectory(readableMessage.substring(2));
+                    FileIO.createDirectory(readableMessage.substring(2));
                 } else if (readableMessage.equalsIgnoreCase("end")) {
-                    closeCurrentFile();
+                    fileIO.closeFile();
                     isFinished = true;
                 }
                 else {
@@ -69,7 +65,7 @@ public class FileReceiver {
                 metaData = metadataMessage;
             }
             case byte[] dataMessage -> {
-                save(dataMessage);
+                fileIO.append(dataMessage);
             }
             case null, default -> {
                 System.err.println("Invalid passed object");
@@ -77,41 +73,6 @@ public class FileReceiver {
             }
         }
         return true;
-    }
-
-    private void save(byte[] dataMessage) throws IOException {
-        fileOutputStream.write(dataMessage);
-    }
-
-    private void createDirectory(String directory) throws IOException {
-        Path localPath = Paths.get(FILE_SAVE_PATH + directory);
-        Files.createDirectories(localPath);
-    }
-
-    private void setCurrentFile(String file) throws IOException {
-        if (fileOutputStream != null) {
-            closeCurrentFile();
-        }
-
-        currentFile = file;
-        localPathTmp = Paths.get(FILE_SAVE_PATH + file + FILE_WORKING_MARKER);
-
-        fileOutputStream = new FileOutputStream(localPathTmp.toFile());
-    }
-
-    private void closeCurrentFile() throws IOException {
-        if (fileOutputStream == null) {
-            return;
-        }
-        if (localPathTmp == null || currentFile == null) {
-            fileOutputStream.close();
-            return;
-        }
-
-        Path localPath = Paths.get(FILE_SAVE_PATH + currentFile);
-        Files.move(localPathTmp, localPathTmp.resolveSibling(localPath));
-
-        fileOutputStream.close();
     }
 
     public FileReceiver(Socket socket) {
@@ -131,13 +92,12 @@ public class FileReceiver {
         }
     }
 
-
     public void close() {
         isFinished = false;
         receiveThread.interrupt();
 
         try {
-            closeCurrentFile();
+            fileIO.closeFile();
         } catch (IOException e) {
             e.printStackTrace();
         }
