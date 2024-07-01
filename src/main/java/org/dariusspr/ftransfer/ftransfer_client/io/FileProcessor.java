@@ -12,7 +12,7 @@ public class FileProcessor {
     private final Path localParentPath;
 
     private long size = 0;
-    private final ArrayList<Path> fileTree = new ArrayList<>();
+    private final ArrayList<String> fileTree = new ArrayList<>();
 
     public FileProcessor(File file) {
         this.localParentPath = file.getParentFile().toPath();
@@ -26,13 +26,15 @@ public class FileProcessor {
             FileVisitor<Path> fileVisitor = new FileVisitor<Path>() {
                 @Override
                 public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                    fileTree.add(rootPathParent.relativize(dir));
+                    Path path = rootPathParent.relativize(dir);
+                    fileTree.add(path.toString());
                     return FileVisitResult.CONTINUE;
                 }
 
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    fileTree.add(rootPathParent.relativize(file));
+                    Path path = rootPathParent.relativize(file);
+                    fileTree.add(path.toString());
                     size += file.toFile().length();
                     return FileVisitResult.CONTINUE;
                 }
@@ -49,14 +51,14 @@ public class FileProcessor {
             };
 
             try {
-                Files.walkFileTree(rootPathParent, fileVisitor);
+                Files.walkFileTree(rootFile.toPath(), fileVisitor);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
 
         } else {
             size = rootFile.length();
-            fileTree.add(rootFile.toPath().getFileName());
+            fileTree.add(rootFile.toPath().getFileName().toString());
         }
         metaData = new FileMetaData(fileTree, size);
     }
