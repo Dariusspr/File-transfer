@@ -6,7 +6,6 @@ import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 
 import java.io.File;
 import java.util.ArrayList;
-
 public class ClientLocalData {
     private static final ClientLocalData localData = new ClientLocalData();
 
@@ -21,8 +20,6 @@ public class ClientLocalData {
         this.selectedReceivers = new ArrayList<>();
         this.selectedFiles = FXCollections.observableArrayList();
     }
-
-
 
     public static ClientLocalData getData() {
         return localData;

@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class FileOutput {
-    private final static String DEFAULT_FILE_SAVE_PATH = "/saved/";
+    private final static String DEFAULT_FILE_SAVE_PATH = "./saved/";
     private final static String FILE_WORKING_MARKER = "_tmp";
 
     private String file;
@@ -39,12 +39,8 @@ public class FileOutput {
             fileOutputStream.close();
             return;
         }
-
-        Path localPath = Paths.get(DEFAULT_FILE_SAVE_PATH + file);
-        Files.move(localFilePathTmp, localFilePathTmp.resolveSibling(localPath));
-
         fileOutputStream.close();
-
+        Files.move(localFilePathTmp, localFilePathTmp.resolveSibling(file));
     }
 
     public String getFile() {

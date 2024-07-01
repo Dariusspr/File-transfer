@@ -13,8 +13,7 @@ public class SenderManager {
     private static final int THREAD_POOL_SIZE = 5;
     private final ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
-    private final ArrayList<FileSender> undecidedSenders = new ArrayList<>();
-    private final ArrayList<FileSender> inQueueSenders = new ArrayList<>();
+    private final ArrayList<FileSender> senders = new ArrayList<>();
 
     private SenderManager() {}
 
@@ -22,30 +21,27 @@ public class SenderManager {
         return manager;
     }
 
-    public void addSender(File file) {
+    public void addFile(File file) {
         FileSender fileSender = new FileSender(file);
-        undecidedSenders.add(fileSender);
+        senders.add(fileSender);
     }
 
-    public void sendAll(ClientInfo ...receivers) {
+    public void sendAll(ArrayList<ClientInfo> receivers) {
         setReceivers(receivers);
-        for (FileSender fileSender : undecidedSenders) {
+        for (FileSender fileSender : senders) {
             executor.submit(fileSender);
         }
-        inQueueSenders.addAll(undecidedSenders);
-        undecidedSenders.clear();
+        senders.clear();
     }
 
-    public ArrayList<FileSender> getUndecidedSenders() {
-        return undecidedSenders;
+    public ArrayList<FileSender> getSenders() {
+        return senders;
     }
 
-    public ArrayList<FileSender> getInQueueSenders() {
-        return inQueueSenders;
-    }
 
     public void closeSender(FileSender sender) {
-        inQueueSenders.remove(sender);
+        sender.close();
+        senders.remove(sender);
     }
 
     public void stop() {
@@ -53,8 +49,8 @@ public class SenderManager {
         executor.shutdown();
     }
 
-    private void setReceivers(ClientInfo ...receivers) {
-        for (FileSender sender : undecidedSenders) {
+    private void setReceivers(ArrayList<ClientInfo> receivers) {
+        for (FileSender sender : senders) {
             sender.setReceivers(receivers);
         }
     }

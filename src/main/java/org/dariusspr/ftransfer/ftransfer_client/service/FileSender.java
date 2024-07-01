@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class FileSender implements Runnable {
-    private ClientInfo[] receivers;
+    private ArrayList<ClientInfo> receivers;
 
     private final ArrayList<Socket> sockets = new ArrayList<>();
     private final ArrayList<DataInputStream> dataInputStreams = new ArrayList<>();
@@ -66,7 +66,7 @@ public class FileSender implements Runnable {
 
         sendAll("end");
 
-        closeAll();
+        SenderManager.get().closeSender(this);
     }
 
     private void sendAll(Object object){
@@ -139,7 +139,7 @@ public class FileSender implements Runnable {
         }
     }
 
-    private void closeAll() {
+    public void close() {
         for (int index = 0; index < sockets.size(); index++) {
             closeSocket(index);
         }
@@ -176,7 +176,7 @@ public class FileSender implements Runnable {
         }
     }
 
-    public void setReceivers(ClientInfo[] receivers) {
+    public void setReceivers(ArrayList<ClientInfo> receivers) {
         this.receivers = receivers;
     }
 }

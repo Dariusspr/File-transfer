@@ -8,6 +8,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.dariusspr.ftransfer.ftransfer_client.Launcher;
 import org.dariusspr.ftransfer.ftransfer_client.service.ReceiverServer;
+import org.dariusspr.ftransfer.ftransfer_client.service.SenderManager;
 import org.dariusspr.ftransfer.ftransfer_client.service.ServerConnection;
 
 import java.io.IOException;
@@ -56,6 +57,7 @@ public class ClientApplication extends Application {
             ServerConnection.get().stop();
         }
         ReceiverServer.get().stop();
+        SenderManager.get().stop();
         primaryStage.close(); // TODO: proper way
     }
 

@@ -9,7 +9,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
+import org.dariusspr.ftransfer.ftransfer_client.service.SenderManager;
 import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
 import org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication;
@@ -36,7 +36,7 @@ public class MainController implements Initializable {
         private Button btnClose;
 
         @FXML
-        private Button btnSendTo;
+        private Button btnSend;
 
         @FXML
         private VBox fileContainer;
@@ -46,6 +46,7 @@ public class MainController implements Initializable {
 
         private ArrayList<ClientInfo> selectedReceivers;
         private ObservableList<File> selectedFiles;
+        private final SenderManager senderManager = SenderManager.get();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -59,6 +60,13 @@ public class MainController implements Initializable {
 
         selectedFiles = clientLocalData.getSelectedFiles();
         btnAddFiles.setOnMouseClicked(this::addFiles);
+
+        btnSend.setOnMouseClicked(this::send);
+    }
+
+    private void send(MouseEvent mouseEvent) {
+        selectedFiles.forEach(senderManager::addFile);
+        senderManager.sendAll(selectedReceivers);
     }
 
     private void addFiles(MouseEvent mouseEvent) {

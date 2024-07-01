@@ -32,7 +32,7 @@
          </VBox.margin>
          <children>
             <MenuButton fx:id="btnReceivers" mnemonicParsing="false" prefHeight="30.0" style="-fx-background-color: white;" text="Receivers" />
-            <Button fx:id="btnSendTo" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" style="-fx-background-color: white;" text="Send">
+            <Button fx:id="btnSend" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" style="-fx-background-color: white;" text="Send">
                <HBox.margin>
                   <Insets left="30.0" />
                </HBox.margin>
