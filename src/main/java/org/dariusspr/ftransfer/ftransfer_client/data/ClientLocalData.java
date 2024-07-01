@@ -4,18 +4,22 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 
+import java.io.File;
 import java.util.ArrayList;
-
 
 public class ClientLocalData {
     private static final ClientLocalData localData = new ClientLocalData();
 
+
     private final ClientInfo info = new ClientInfo();
     private final ObservableList<ClientInfo> availableClients = FXCollections.observableArrayList();
     private final ArrayList<ClientInfo> selectedReceivers;
+    private final ObservableList<File> selectedFiles;
+
+
     private ClientLocalData() {
         this.selectedReceivers = new ArrayList<>();
-
+        this.selectedFiles = FXCollections.observableArrayList();
     }
 
 
@@ -39,4 +43,8 @@ public class ClientLocalData {
     public ArrayList<ClientInfo> getSelectedReceivers() {
         return selectedReceivers;
     }
+    public ObservableList<File> getSelectedFiles() {
+        return selectedFiles;
+    }
+
 }

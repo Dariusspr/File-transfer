@@ -19,7 +19,7 @@ import org.dariusspr.ftransfer.ftransfer_client.gui.SceneType;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import static org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication.getStage;
+import static org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication.getPrimaryStage;
 import static org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication.setScene;
 import static org.dariusspr.ftransfer.ftransfer_client.gui.utils.AlertUtils.createErrorAlert;
 import static org.dariusspr.ftransfer.ftransfer_client.gui.utils.StageUtils.makeDraggable;
@@ -48,7 +48,7 @@ public class LauncherController implements Initializable {
     private ClientInfo clientInfo;
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        makeDraggable(bar, getStage());
+        makeDraggable(bar, getPrimaryStage());
 
         btnClose.setOnMouseClicked(e -> ClientApplication.close());
 
