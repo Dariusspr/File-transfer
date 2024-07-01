@@ -6,7 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class FileIO {
+public class FileOutput {
     private final static String DEFAULT_FILE_SAVE_PATH = "/saved/";
     private final static String FILE_WORKING_MARKER = "_tmp";
 
@@ -14,9 +14,9 @@ public class FileIO {
     private Path localFilePathTmp;
     private FileOutputStream fileOutputStream;
 
-    public FileIO () {}
+    public FileOutput() {}
 
-    public FileIO(String file) throws IOException {
+    public FileOutput(String file) throws IOException {
         setFile(file);
     }
 

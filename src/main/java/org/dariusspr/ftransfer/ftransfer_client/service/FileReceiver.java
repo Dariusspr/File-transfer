@@ -1,6 +1,6 @@
 package org.dariusspr.ftransfer.ftransfer_client.service;
 
-import org.dariusspr.ftransfer.ftransfer_client.io.FileIO;
+import org.dariusspr.ftransfer.ftransfer_client.io.FileOutput;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileMetaData;
 
 import java.io.*;
@@ -8,7 +8,7 @@ import java.net.Socket;
 
 public class FileReceiver {
     private final ReceiverManager manager = ReceiverManager.get();
-    private FileIO fileIO;
+    private FileOutput fileOutput;
     private final Socket socket;
     private ObjectInputStream objectInputStream;
     private DataOutputStream dataOutputStream;
@@ -35,7 +35,7 @@ public class FileReceiver {
                 }
 
             } catch (IOException e) {
-                System.err.println("Failure while working with '" + fileIO.getFile() + "'");
+                System.err.println("Failure while working with '" + fileOutput.getFile() + "'");
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
@@ -45,16 +45,16 @@ public class FileReceiver {
     }
 
     private boolean handleReceivedObject(Object object) throws IOException {
-        fileIO = new FileIO();
+        fileOutput = new FileOutput();
 
         switch (object) {
             case String readableMessage -> {
                 if (readableMessage.startsWith("f:")) {
-                    fileIO.setFile(readableMessage.substring(2));
+                    fileOutput.setFile(readableMessage.substring(2));
                 } else if (readableMessage.startsWith("d:")) {
-                    FileIO.createDirectory(readableMessage.substring(2));
+                    FileOutput.createDirectory(readableMessage.substring(2));
                 } else if (readableMessage.equalsIgnoreCase("end")) {
-                    fileIO.closeFile();
+                    fileOutput.closeFile();
                     isFinished = true;
                 }
                 else {
@@ -65,7 +65,7 @@ public class FileReceiver {
                 metaData = metadataMessage;
             }
             case byte[] dataMessage -> {
-                fileIO.append(dataMessage);
+                fileOutput.append(dataMessage);
             }
             case null, default -> {
                 System.err.println("Invalid passed object");
@@ -97,7 +97,7 @@ public class FileReceiver {
         receiveThread.interrupt();
 
         try {
-            fileIO.closeFile();
+            fileOutput.closeFile();
         } catch (IOException e) {
             e.printStackTrace();
         }

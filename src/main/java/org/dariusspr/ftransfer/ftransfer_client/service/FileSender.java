@@ -1,18 +1,14 @@
 package org.dariusspr.ftransfer.ftransfer_client.service;
 
+import org.dariusspr.ftransfer.ftransfer_client.io.FileInput;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileMetaData;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileProcessor;
 import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 
 public class FileSender implements Runnable {
@@ -21,7 +17,6 @@ public class FileSender implements Runnable {
     private final ArrayList<Socket> sockets = new ArrayList<>();
     private final ArrayList<DataInputStream> dataInputStreams = new ArrayList<>();
     private final ArrayList<ObjectOutputStream> objectOutputStreams = new ArrayList<>();
-    private static final int CHUNK_SIZE = 65536; // 64 KB
 
     private final FileProcessor fileProcessor;
 
@@ -36,7 +31,7 @@ public class FileSender implements Runnable {
     public void run() {
         if (!prepareSockets()) {
             return;
-        };
+        }
         prepareStreams();
 
         FileMetaData metaData = fileProcessor.getMetaData();
@@ -54,19 +49,18 @@ public class FileSender implements Runnable {
                 sendAll("f:" + path);
             }
 
-            try (FileInputStream fileIn = new FileInputStream(localPath.toFile())){
-                byte[] chunks = new byte[CHUNK_SIZE];
-                int bytesRead;
-                while ((bytesRead = fileIn.read(chunks)) != -1) {
-                    sendAll(Arrays.copyOf(chunks, bytesRead));
+            try (final FileInput fileInput = new FileInput()) {
+                fileInput.setFile(localPath);
+                byte[] chunks;
+                while ((chunks = fileInput.readChunks()) != null) {
+                    sendAll(chunks);
                 }
-
             } catch (FileNotFoundException e) {
                 // TODO:
                 System.err.println(localPath + " was not found");
-            } catch (IOException e) {
+            } catch (Exception e) {
                 // TODO:
-                System.err.println("Failed to read " + localPath);
+                System.err.println("Failed to read " + path);
             }
         }
 
@@ -135,14 +129,12 @@ public class FileSender implements Runnable {
         for (Socket socket : sockets) {
             try {
             DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
-            DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             dataInputStreams.add(dataInputStream);
             objectOutputStreams.add(objectOutputStream);
             } catch (IOException e) {
                 // TODO:
                 System.err.println("Failed to create streams for" + socket);
-
             }
         }
     }
@@ -187,5 +179,4 @@ public class FileSender implements Runnable {
     public void setReceivers(ClientInfo[] receivers) {
         this.receivers = receivers;
     }
-
 }
