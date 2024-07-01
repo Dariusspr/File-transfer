@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
@@ -12,6 +13,7 @@ import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
 import org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication;
 import org.dariusspr.ftransfer.ftransfer_client.gui.utils.ReceiverMenuItem;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -43,8 +45,8 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        selectedReceivers = new ArrayList<>();
-
+        ClientLocalData clientLocalData = ClientLocalData.getData();
+        selectedReceivers = clientLocalData.getSelectedReceivers();
         makeDraggable(bar, getStage());
 
         btnClose.setOnMouseClicked(e -> ClientApplication.close());
@@ -55,19 +57,11 @@ public class MainController implements Initializable {
     private void initializeComboBox() {
 
         receivers = ClientLocalData.getData().getAvailableClients();
-
-        // Temporary data for testing purposes
-        receivers.add(new ClientInfo("client 1", "localhost", 9999));
-        receivers.add(new ClientInfo("client 2", "localhost", 2121));
-        receivers.add(new ClientInfo("client 3", "localhost", 1111));
-
         updateReceiversMenu(receivers);
-
         // Update context menu items
         receivers.addListener((ListChangeListener<ClientInfo>) change -> {
             updateReceiversMenu(receivers);
         });
-
         // Update list of selected receivers
         btnReceivers.setOnHiding(e ->{
             selectedReceivers.clear();
@@ -80,7 +74,10 @@ public class MainController implements Initializable {
                 }
             }
         });
+
     }
+
+
 
     private void updateReceiversMenu(ObservableList<ClientInfo> receivers) {
         btnReceivers.getItems().clear();

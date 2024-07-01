@@ -4,12 +4,21 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 
+import java.util.ArrayList;
+
+
 public class ClientLocalData {
     private static final ClientLocalData localData = new ClientLocalData();
 
     private final ClientInfo info = new ClientInfo();
     private final ObservableList<ClientInfo> availableClients = FXCollections.observableArrayList();
-    private ClientLocalData() {}
+    private final ArrayList<ClientInfo> selectedReceivers;
+    private ClientLocalData() {
+        this.selectedReceivers = new ArrayList<>();
+
+    }
+
+
 
     public static ClientLocalData getData() {
         return localData;
@@ -27,4 +36,7 @@ public class ClientLocalData {
         return availableClients;
     }
 
+    public ArrayList<ClientInfo> getSelectedReceivers() {
+        return selectedReceivers;
+    }
 }
