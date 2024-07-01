@@ -8,15 +8,16 @@ import java.net.Socket;
 
 public class FileReceiver {
     private final ReceiverManager manager = ReceiverManager.get();
-    private FileOutput fileOutput;
+    private FileMetaData metaData;
+
+    private final FileOutput fileOutput = new FileOutput();
+
     private final Socket socket;
     private ObjectInputStream objectInputStream;
     private DataOutputStream dataOutputStream;
 
-    private FileMetaData metaData;
-
-    private  volatile boolean isFinished;
     private final Thread receiveThread = new Thread(this::receive);
+    private  volatile boolean isFinished;
 
     private void receive() {
         if (!prepareStreams()) {
@@ -45,8 +46,6 @@ public class FileReceiver {
     }
 
     private boolean handleReceivedObject(Object object) throws IOException {
-        fileOutput = new FileOutput();
-
         switch (object) {
             case String readableMessage -> {
                 if (readableMessage.startsWith("f:")) {
@@ -61,12 +60,8 @@ public class FileReceiver {
                     System.err.println("Invalid readableMessage: '" + readableMessage + "'");
                 }
             }
-            case FileMetaData metadataMessage -> {
-                metaData = metadataMessage;
-            }
-            case byte[] dataMessage -> {
-                fileOutput.append(dataMessage);
-            }
+            case FileMetaData metadataMessage -> metaData = metadataMessage;
+            case byte[] dataMessage -> fileOutput.append(dataMessage);
             case null, default -> {
                 System.err.println("Invalid passed object");
                 return false;
