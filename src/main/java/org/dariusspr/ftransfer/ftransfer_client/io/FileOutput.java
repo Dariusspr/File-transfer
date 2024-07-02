@@ -14,7 +14,13 @@ public class FileOutput {
     private Path localFilePathTmp;
     private FileOutputStream fileOutputStream;
 
-    public FileOutput() {}
+    public FileOutput() {
+        try {
+            createSaveDirectory();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public FileOutput(String file) throws IOException {
         setFile(file);
@@ -45,6 +51,11 @@ public class FileOutput {
 
     public String getFile() {
         return file;
+    }
+
+    public static void createSaveDirectory() throws IOException {
+        Path localPath = Paths.get(DEFAULT_FILE_SAVE_PATH);
+        Files.createDirectories(localPath);
     }
 
     public static void createDirectory(String directory) throws IOException {
