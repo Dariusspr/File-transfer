@@ -32,11 +32,10 @@ public class FileOutput {
         }
 
         this.file = file;
-        localFilePathTmp = Paths.get(DEFAULT_FILE_SAVE_PATH + file + FILE_WORKING_MARKER);
+        localFilePathTmp = getTemporaryFilePath(file);
 
         fileOutputStream = new FileOutputStream(localFilePathTmp.toFile());
     }
-
     public void closeFile() throws IOException {
         if (fileOutputStream == null) {
             return;
@@ -45,12 +44,31 @@ public class FileOutput {
             fileOutputStream.close();
             return;
         }
-        fileOutputStream.close();
-        Files.move(localFilePathTmp, localFilePathTmp.resolveSibling(file));
+        try {
+            fileOutputStream.close();
+        } finally {
+            renameFile();
+        }
+    }
+
+    private void renameFile() {
+        Path path = localFilePathTmp.resolveSibling(file);
+        if (localFilePathTmp.toFile().renameTo(path.toFile())) {
+            System.err.println("File '" + localFilePathTmp +"' renamed to '" + path + "'.");
+        } else {
+            System.err.println("Failed to rename File '" + localFilePathTmp +"' to '" + path + "'.");
+        }
     }
 
     public String getFile() {
         return file;
+    }
+
+    public void append(byte[] dataMessage) throws IOException {
+        if (fileOutputStream == null) {
+            throw new IOException("fileOutputStream is null");
+        }
+        fileOutputStream.write(dataMessage);
     }
 
     public static void createSaveDirectory() throws IOException {
@@ -63,10 +81,16 @@ public class FileOutput {
         Files.createDirectories(localPath);
     }
 
-    public void append(byte[] dataMessage) throws IOException {
-        if (fileOutputStream == null) {
-            throw new IOException("fileOutputStream is null");
+    private static Path getTemporaryFilePath(String file) {
+        int index = file.lastIndexOf('.');
+
+        if (index == -1) {
+            return Paths.get(DEFAULT_FILE_SAVE_PATH + file + FILE_WORKING_MARKER);
+        } else {
+            String base = file.substring(0, index);
+            String extension = file.substring(index);
+            return Paths.get(DEFAULT_FILE_SAVE_PATH + base + FILE_WORKING_MARKER + extension);
         }
-        fileOutputStream.write(dataMessage);
     }
+
 }
