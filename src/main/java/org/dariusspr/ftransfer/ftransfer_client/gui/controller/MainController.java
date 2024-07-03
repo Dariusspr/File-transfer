@@ -3,12 +3,16 @@ package org.dariusspr.ftransfer.ftransfer_client.gui.controller;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import org.dariusspr.ftransfer.ftransfer_client.Launcher;
 import org.dariusspr.ftransfer.ftransfer_client.service.SenderManager;
 import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
@@ -16,40 +20,47 @@ import org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication;
 import org.dariusspr.ftransfer.ftransfer_client.gui.utils.ReceiverMenuItem;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import static org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication.getPrimaryStage;
 import static org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication.getSecondaryStage;
 import static org.dariusspr.ftransfer.ftransfer_client.gui.utils.StageUtils.makeDraggable;
 
 public class MainController implements Initializable {
-        @FXML
-        private AnchorPane bar;
 
-        @FXML
-        private Button btnAddFiles;
+    @FXML
+    private AnchorPane bar;
 
-        @FXML
-        private Button btnClose;
+    @FXML
+    private Button btnAddFiles;
 
-        @FXML
-        private Button btnSend;
+    @FXML
+    private Button btnClose;
 
-        @FXML
-        private VBox fileContainer;
+    @FXML
+    private Button btnSend;
 
-        @FXML
-        private  MenuButton btnReceivers;
+    @FXML
+    private VBox fileContainer;
 
-        private ArrayList<ClientInfo> selectedReceivers;
-        private ObservableList<File> selectedFiles;
-        private final SenderManager senderManager = SenderManager.get();
+    @FXML
+    private  MenuButton btnReceivers;
+
+    @FXML
+    private FlowPane fpSelectedFiles;
+
+    private ArrayList<ClientInfo> selectedReceivers;
+    private ObservableList<File> selectedFiles;
+    private final SenderManager senderManager = SenderManager.get();
+
+    private Map<File, Node> selectedFileComponentsMap;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        selectedFileComponentsMap = new HashMap<>();
+
         ClientLocalData clientLocalData = ClientLocalData.getData();
         selectedReceivers = clientLocalData.getSelectedReceivers();
         makeDraggable(bar, getPrimaryStage());
@@ -59,6 +70,21 @@ public class MainController implements Initializable {
         initializeComboBox();
 
         selectedFiles = clientLocalData.getSelectedFiles();
+        selectedFiles.addListener((ListChangeListener<File>) change -> {
+            while(change.next()) {
+                if (change.wasRemoved()) {
+                    for (File file : change.getRemoved()) {
+                        removeSelectedFileComponent(file);
+                    }
+                }
+                else if (change.wasAdded()) {
+                    for (File file : change.getAddedSubList()) {
+                        createSelectedFileComponent(file);
+                    }
+                }
+            }
+        });
+
         btnAddFiles.setOnMouseClicked(this::addFiles);
 
         btnSend.setOnMouseClicked(this::send);
@@ -78,6 +104,27 @@ public class MainController implements Initializable {
             return;
 
         selectedFiles.addAll(list);
+    }
+
+    private void createSelectedFileComponent(File file) {
+        FXMLLoader fxmlLoader = new FXMLLoader(Launcher.class.getResource("file-component.fxml"));
+        Node component;
+        try {
+            component = fxmlLoader.load();
+            SelectedFileController controller = fxmlLoader.getController();
+            controller.setFileName(file);
+
+            fpSelectedFiles.getChildren().add(component);
+            selectedFileComponentsMap.put(file, component);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void removeSelectedFileComponent(File file) {
+        Node component = selectedFileComponentsMap.get(file);
+        fpSelectedFiles.getChildren().remove(component);
+        selectedFileComponentsMap.remove(file);
     }
 
     private void initializeComboBox() {
@@ -102,8 +149,6 @@ public class MainController implements Initializable {
             }
         });
     }
-
-
 
     private void updateReceiversMenu(ObservableList<ClientInfo> receivers) {
         btnReceivers.getItems().clear();

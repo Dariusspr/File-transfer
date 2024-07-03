@@ -1,6 +1,7 @@
 package org.dariusspr.ftransfer.ftransfer_client.data;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 
@@ -13,12 +14,15 @@ public class ClientLocalData {
     private final ClientInfo info = new ClientInfo();
     private final ObservableList<ClientInfo> availableClients = FXCollections.observableArrayList();
     private final ArrayList<ClientInfo> selectedReceivers;
+
     private final ObservableList<File> selectedFiles;
 
+    private final ObservableList<FileTransfer> allFileTransfers;
 
     private ClientLocalData() {
         this.selectedReceivers = new ArrayList<>();
         this.selectedFiles = FXCollections.observableArrayList();
+        this.allFileTransfers = FXCollections.observableArrayList();
     }
 
     public static ClientLocalData getData() {
