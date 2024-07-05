@@ -13,24 +13,22 @@ public class FileTransfer {
     private boolean isFile;
     private String fromTo;
     private String name;
-    private final SimpleObjectProperty<TransferState> state;
+    private final SimpleObjectProperty<TransferState> state = new SimpleObjectProperty<>();
     private double size;
     private String unit;
-    private final SimpleDoubleProperty progress;
+    private final SimpleDoubleProperty progress = new SimpleDoubleProperty();
 
     public FileTransfer() {
-        state = new SimpleObjectProperty<>();
-        progress = new SimpleDoubleProperty();
     }
 
     public FileTransfer(boolean isFile, String fromTo, String name, TransferState state, float size, String unit, float progress) {
         this.isFile = isFile;
         this.fromTo = fromTo;
         this.name = name;
-        this.state = new SimpleObjectProperty<>(state);
+        this.state.set(state);
         this.size = size;
         this.unit = unit;
-        this.progress = new SimpleDoubleProperty(progress);
+        this.progress.set(progress);
     }
 
     public boolean isFile() {
@@ -62,7 +60,7 @@ public class FileTransfer {
     }
 
     public void setState(TransferState state) {
-        Platform.runLater(() ->this.state.set(state));
+        Platform.runLater(() -> this.state.set(state));
     }
 
     public double getSize() {
@@ -95,8 +93,13 @@ public class FileTransfer {
     }
 
     public void setProgress(long progress, long total) {
-        BigDecimal bd = new BigDecimal(progress).divide(BigDecimal.valueOf(total), 2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-        Platform.runLater(() -> this.progress.set(bd.doubleValue()));
+        if (progress != 0 || total != 0) {
+            BigDecimal bd = new BigDecimal(progress).divide(BigDecimal.valueOf(total), 2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+            Platform.runLater(() -> this.progress.set(bd.doubleValue()));
+
+        } else {
+            Platform.runLater(() -> this.progress.set(0));
+        }
     }
 
     public SimpleObjectProperty<TransferState> stateProperty() {

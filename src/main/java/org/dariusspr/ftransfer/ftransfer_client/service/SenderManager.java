@@ -23,7 +23,7 @@ public class SenderManager {
     }
 
     public void addFile(File file) {
-        FileSender fileSender = new FileSender(file);
+        FileSender fileSender = new FileSender(file, this);
         senders.add(fileSender);
     }
 
@@ -36,8 +36,8 @@ public class SenderManager {
         senders.forEach(FileSender::setTransferInfo);
 
         ClientLocalData clientLocalData = ClientLocalData.getData();
-        senders.forEach(e-> clientLocalData.getAllFileTransfers()
-                        .add(e.getTransferInfo()));
+        senders.forEach(sender -> clientLocalData.getAllFileTransfers()
+                        .add(sender.getTransfer()));
 
         for (FileSender fileSender : senders) {
             executor.submit(fileSender);

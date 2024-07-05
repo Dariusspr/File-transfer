@@ -1,7 +1,5 @@
 package org.dariusspr.ftransfer.ftransfer_client.service;
 
-import javafx.application.Platform;
-import javafx.fxml.FXML;
 import org.dariusspr.ftransfer.ftransfer_client.data.FileTransfer;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileInput;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileMetaData;
@@ -13,7 +11,6 @@ import java.net.Socket;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Timer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -26,18 +23,20 @@ public class FileSender implements Runnable {
     private final ArrayList<ObjectOutputStream> objectOutputStreams = new ArrayList<>();
 
     private final FileProcessor fileProcessor;
+    private final SenderManager senderManager;
 
     // TODO: later on: implement pause/resume, cancel
     private final File rootFile;
     private final static int PROGRESS_UPDATE_FREQ = 1000; // in ms
-    private final FileTransfer transferInfo;
+    private final FileTransfer transfer;
     private  long bytesSent;
     private final long bytesToSend;
 
-    public FileSender(File rootFile) {
+    public FileSender(File rootFile, SenderManager senderManager) {
         this.rootFile = rootFile;
         fileProcessor = new FileProcessor(rootFile);
-        this.transferInfo = new FileTransfer();
+        this.senderManager = senderManager;
+        this.transfer = new FileTransfer();
         bytesToSend = fileProcessor.getMetaData().size();
     }
 
@@ -55,7 +54,7 @@ public class FileSender implements Runnable {
         Path absoluteParent = fileProcessor.getLocalParentPath();
         bytesSent = 0;
 
-        transferInfo.setState(FileTransfer.TransferState.SENDING);
+        transfer.setState(FileTransfer.TransferState.SENDING);
         try (ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor()) {
             scheduler.scheduleAtFixedRate(
                     this::updateTransferProgress,
@@ -91,13 +90,14 @@ public class FileSender implements Runnable {
         }
 
         sendAll("end");
-        transferInfo.setProgress(bytesToSend, bytesToSend);
-        transferInfo.setState(FileTransfer.TransferState.SENT);
-        SenderManager.get().closeSender(this);
+        bytesSent = bytesToSend;
+        updateTransferProgress();
+        transfer.setState(FileTransfer.TransferState.SENT);
+        senderManager.closeSender(this);
     }
 
     private void updateTransferProgress() {
-        transferInfo.setProgress(bytesSent, bytesToSend);
+        transfer.setProgress(bytesSent, bytesToSend);
     }
 
 
@@ -213,11 +213,11 @@ public class FileSender implements Runnable {
     }
 
     public void setTransferInfo() {
-        transferInfo.setFile(!rootFile.isDirectory());
-        transferInfo.setName(rootFile.getName());
-        transferInfo.setState(FileTransfer.TransferState.PENDING);
-        transferInfo.setSize(bytesToSend);
-        transferInfo.setProgress(0, bytesToSend);
+        transfer.setFile(!rootFile.isDirectory());
+        transfer.setName(rootFile.getName());
+        transfer.setState(FileTransfer.TransferState.PENDING);
+        transfer.setSize(bytesToSend);
+        transfer.setProgress(0, bytesToSend);
         StringBuilder stringBuilder = new StringBuilder("To ");
         for (int i  = 0; i < receivers.size(); i++) {
             stringBuilder.append(receivers.get(i).getName());
@@ -225,10 +225,10 @@ public class FileSender implements Runnable {
                 stringBuilder.append(", ");
             }
         }
-        transferInfo.setFromTo(stringBuilder.toString());
+        transfer.setFromTo(stringBuilder.toString());
     }
 
-    public FileTransfer getTransferInfo() {
-        return transferInfo;
+    public FileTransfer getTransfer() {
+        return transfer;
     }
 }

@@ -14,5 +14,4 @@ module org.dariusspr.ftransfer.ftransfer {
 
     opens org.dariusspr.ftransfer.ftransfer_client.data to javafx.fxml;
     exports org.dariusspr.ftransfer.ftransfer_client.data;
-
 }

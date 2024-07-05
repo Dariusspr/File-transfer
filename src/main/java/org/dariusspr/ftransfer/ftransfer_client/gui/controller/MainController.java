@@ -1,5 +1,6 @@
 package org.dariusspr.ftransfer.ftransfer_client.gui.controller;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
@@ -106,12 +107,11 @@ public class MainController implements Initializable {
                     }
                 } else if (change.wasRemoved()) {
                     for (FileTransfer fileTransfer : change.getRemoved()) {
-                        removeFileTransferComponent(fileTransfer);
+                        Platform.runLater(() ->removeFileTransferComponent(fileTransfer));
                     }
                 }
             }
         });
-
     }
 
     private void removeFileTransferComponent(FileTransfer fileTransfer) {
@@ -197,7 +197,7 @@ public class MainController implements Initializable {
             SimpleObjectProperty<FileTransfer.TransferState> stateProperty = fileTransfer.stateProperty();
             controller.setStateProperty(stateProperty);
 
-            fileContainer.getChildren().add(component);
+            Platform.runLater(() ->fileContainer.getChildren().add(component));
             fileTransferNodeMap.put(fileTransfer, component);
         } catch (IOException e) {
             throw new RuntimeException(e);

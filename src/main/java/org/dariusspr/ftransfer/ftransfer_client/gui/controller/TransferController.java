@@ -59,7 +59,7 @@ public class TransferController {
     }
 
     public void setStateProperty(SimpleObjectProperty<TransferState> state) {
-        txtState.setText(String.valueOf(state.asString()));
+        txtState.textProperty().bind(state.asString());
     }
 
     public void setUnits(String units) {

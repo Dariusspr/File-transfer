@@ -1,13 +1,18 @@
 package org.dariusspr.ftransfer.ftransfer_client.service;
 
+import org.dariusspr.ftransfer.ftransfer_client.data.FileTransfer;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileOutput;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileMetaData;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class FileReceiver {
     private final ReceiverManager manager = ReceiverManager.get();
+    private final ReceiverManager receiverManager;
     private FileMetaData metaData;
 
     private final FileOutput fileOutput = new FileOutput();
@@ -19,29 +24,40 @@ public class FileReceiver {
     private final Thread receiveThread = new Thread(this::receive);
     private  volatile boolean isFinished;
 
+    private final static int PROGRESS_UPDATE_FREQ = 1000; // in ms
+
+    private FileTransfer transfer;
+    private long bytesReceived;
+    private long bytesToReceive;
+
     private void receive() {
         if (!prepareStreams()) {
             manager.closeReceiver(this);
             return;
         }
 
-        while (!isFinished) {
-            try {
-                Object object = objectInputStream.readObject();
+        try (ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor()) {
+            scheduler.scheduleAtFixedRate(this::updateTransferProgress,
+                PROGRESS_UPDATE_FREQ, PROGRESS_UPDATE_FREQ,
+                TimeUnit.MICROSECONDS);
 
-                if (handleReceivedObject(object)) {
-                    dataOutputStream.writeByte(1);
-                } else {
-                    dataOutputStream.writeByte(0);
+            while (!isFinished) {
+                try {
+                    Object object = objectInputStream.readObject();
+
+                    if (handleReceivedObject(object)) {
+                        dataOutputStream.writeByte(1);
+                    } else {
+                        dataOutputStream.writeByte(0);
+                    }
+
+                } catch (IOException e) {
+                    System.err.println("Failure while working with '" + fileOutput.getFile() + "'");
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
                 }
-
-            } catch (IOException e) {
-                System.err.println("Failure while working with '" + fileOutput.getFile() + "'");
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
             }
         }
-
         manager.closeReceiver(this);
     }
 
@@ -55,13 +71,22 @@ public class FileReceiver {
                 } else if (readableMessage.equalsIgnoreCase("end")) {
                     fileOutput.closeFile();
                     isFinished = true;
+                    bytesToReceive = bytesReceived;
+                    updateTransferProgress();
+                    transfer.setState(FileTransfer.TransferState.RECEIVED);
                 }
                 else {
                     System.err.println("Invalid readableMessage: '" + readableMessage + "'");
                 }
             }
-            case FileMetaData metadataMessage -> metaData = metadataMessage;
-            case byte[] dataMessage -> fileOutput.append(dataMessage);
+            case FileMetaData metadataMessage -> {
+                metaData = metadataMessage;
+                initFileTransfer();
+            }
+            case byte[] dataMessage -> {
+                fileOutput.append(dataMessage);
+                bytesReceived += dataMessage.length;
+            }
             case null, default -> {
                 System.err.println("Invalid passed object");
                 return false;
@@ -70,9 +95,10 @@ public class FileReceiver {
         return true;
     }
 
-    public FileReceiver(Socket socket) {
+    public FileReceiver(Socket socket, ReceiverManager receiverManager) {
         this.socket = socket;
         isFinished = false;
+        this.receiverManager = receiverManager;
         receiveThread.start();
     }
 
@@ -121,5 +147,26 @@ public class FileReceiver {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void updateTransferProgress() {
+        transfer.setProgress(bytesReceived, bytesToReceive);
+    }
+
+    private void initFileTransfer() {
+        transfer = new FileTransfer();
+        transfer.setState(FileTransfer.TransferState.RECEIVING);
+        bytesToReceive = metaData.size();
+        transfer.setSize(bytesToReceive);
+        String root = metaData.fileTree().getFirst();
+        transfer.setFile(!new File(root).isDirectory());
+        transfer.setName(root);
+        transfer.setFromTo("From " + metaData.sender());
+        transfer.setProgress(0, bytesToReceive);
+
+        receiverManager.addTransfer(this);
+    }
+    public FileTransfer getTransfer() {
+        return transfer;
     }
 }
