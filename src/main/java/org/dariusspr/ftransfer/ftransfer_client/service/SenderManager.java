@@ -1,5 +1,6 @@
 package org.dariusspr.ftransfer.ftransfer_client.service;
 
+import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
 import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 
 import java.io.File;
@@ -28,10 +29,21 @@ public class SenderManager {
 
     public void sendAll(ArrayList<ClientInfo> receivers) {
         setReceivers(receivers);
+        if (senders.isEmpty() || receivers.isEmpty()) {
+            //TODO:
+            return;
+        }
+        senders.forEach(FileSender::setTransferInfo);
+
+        ClientLocalData clientLocalData = ClientLocalData.getData();
+        senders.forEach(e-> clientLocalData.getAllFileTransfers()
+                        .add(e.getTransferInfo()));
+
         for (FileSender fileSender : senders) {
             executor.submit(fileSender);
         }
         senders.clear();
+        clientLocalData.getSelectedFiles().clear();
     }
 
     public ArrayList<FileSender> getSenders() {

@@ -7,6 +7,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.dariusspr.ftransfer.ftransfer_client.Launcher;
+import org.dariusspr.ftransfer.ftransfer_client.data.FileTransfer;
 import org.dariusspr.ftransfer.ftransfer_client.service.ReceiverServer;
 import org.dariusspr.ftransfer.ftransfer_client.service.SenderManager;
 import org.dariusspr.ftransfer.ftransfer_client.service.ServerConnection;

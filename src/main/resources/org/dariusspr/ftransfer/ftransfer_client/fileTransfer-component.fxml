@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="50.0" prefWidth="1000.0" style="-fx-background-color: #282828;" xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dariusspr.ftransfer.ftransfer_client.gui.controller.TransferController">
+   <children>
+      <Pane prefHeight="50.0" prefWidth="50.0">
+         <HBox.margin>
+            <Insets left="10.0" />
+         </HBox.margin>
+         <children>
+            <Text fx:id="txtFileDir" fill="WHITE" layoutX="19.0" layoutY="36.0" strokeType="OUTSIDE" strokeWidth="0.0" text="D" wrappingWidth="12.47119140625">
+               <font>
+                  <Font size="28.0" />
+               </font>
+            </Text>
+         </children>
+      </Pane>
+      <Pane layoutX="125.0" layoutY="10.0" prefHeight="50.0" prefWidth="190.0">
+         <children>
+            <Text fx:id="txtFromTo" fill="WHITE" layoutY="32.0" strokeType="OUTSIDE" strokeWidth="0.0" text="TO USER" textAlignment="CENTER" wrappingWidth="190.0">
+               <font>
+                  <Font size="17.0" />
+               </font>
+            </Text>
+         </children>
+         <HBox.margin>
+            <Insets left="15.0" />
+         </HBox.margin>
+      </Pane>
+      <Pane layoutX="70.0" layoutY="10.0" prefHeight="50.0" prefWidth="115.0">
+         <children>
+            <Text fx:id="txtState" fill="WHITE" layoutY="31.0" strokeType="OUTSIDE" strokeWidth="0.0" text="SENT" textAlignment="CENTER" wrappingWidth="115.0">
+               <font>
+                  <Font size="17.0" />
+               </font>
+            </Text>
+         </children>
+         <HBox.margin>
+            <Insets left="15.0" />
+         </HBox.margin>
+      </Pane>
+      <Pane prefHeight="50.0" prefWidth="250.0">
+         <children>
+            <Text fx:id="txtName" fill="WHITE" layoutY="31.0" strokeType="OUTSIDE" strokeWidth="0.0" text="filename.txt" textAlignment="CENTER" wrappingWidth="250.0">
+               <font>
+                  <Font size="17.0" />
+               </font>
+            </Text>
+         </children>
+         <HBox.margin>
+            <Insets left="15.0" />
+         </HBox.margin>
+      </Pane>
+      <Pane layoutX="380.0" layoutY="10.0" prefHeight="50.0" prefWidth="74.0">
+         <children>
+            <Text fx:id="txtProgress" fill="WHITE" layoutY="31.0" strokeType="OUTSIDE" strokeWidth="0.0" text="100" textAlignment="RIGHT" wrappingWidth="37.0">
+               <font>
+                  <Font size="17.0" />
+               </font>
+            </Text>
+            <Text fill="WHITE" layoutX="37.0" layoutY="31.0" strokeType="OUTSIDE" strokeWidth="0.0" text="\%" wrappingWidth="25.714284896850586" x="4.0">
+               <font>
+                  <Font size="17.0" />
+               </font>
+            </Text>
+         </children>
+         <HBox.margin>
+            <Insets left="20.0" />
+         </HBox.margin>
+      </Pane>
+      <Pane layoutX="65.0" layoutY="10.0" prefHeight="50.0" prefWidth="91.0">
+         <children>
+            <Text fx:id="txtSize" fill="WHITE" layoutY="31.0" strokeType="OUTSIDE" strokeWidth="0.0" text="1000" textAlignment="RIGHT" wrappingWidth="50.0">
+               <font>
+                  <Font size="17.0" />
+               </font>
+            </Text>
+            <Text fx:id="txtUnits" fill="WHITE" layoutX="52.0" layoutY="31.0" strokeType="OUTSIDE" strokeWidth="0.0" text="GB" wrappingWidth="37.0" x="4.0">
+               <font>
+                  <Font size="17.0" />
+               </font>
+            </Text>
+         </children>
+         <HBox.margin>
+            <Insets left="20.0" />
+         </HBox.margin>
+      </Pane>
+   </children>
+</HBox>

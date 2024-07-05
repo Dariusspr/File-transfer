@@ -1,7 +1,10 @@
 package org.dariusspr.ftransfer.ftransfer_client.data;
 
 
-import java.io.File;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -10,21 +13,24 @@ public class FileTransfer {
     private boolean isFile;
     private String fromTo;
     private String name;
-    private TransferState state;
+    private final SimpleObjectProperty<TransferState> state;
     private double size;
     private String unit;
-    private double progress;
+    private final SimpleDoubleProperty progress;
 
-    public FileTransfer() {}
+    public FileTransfer() {
+        state = new SimpleObjectProperty<>();
+        progress = new SimpleDoubleProperty();
+    }
 
     public FileTransfer(boolean isFile, String fromTo, String name, TransferState state, float size, String unit, float progress) {
         this.isFile = isFile;
         this.fromTo = fromTo;
         this.name = name;
-        this.state = state;
+        this.state = new SimpleObjectProperty<>(state);
         this.size = size;
         this.unit = unit;
-        this.progress = progress;
+        this.progress = new SimpleDoubleProperty(progress);
     }
 
     public boolean isFile() {
@@ -52,11 +58,11 @@ public class FileTransfer {
     }
 
     public TransferState getState() {
-        return state;
+        return state.get();
     }
 
     public void setState(TransferState state) {
-        this.state = state;
+        Platform.runLater(() ->this.state.set(state));
     }
 
     public double getSize() {
@@ -85,13 +91,20 @@ public class FileTransfer {
     }
 
     public double getProgress() {
-        return progress;
+        return progress.get();
     }
 
-    public void setProgress(double progress) {
-        BigDecimal bd = new BigDecimal(progress);
-        bd = bd.setScale(2, RoundingMode.HALF_UP);
-        this.progress = bd.doubleValue();
+    public void setProgress(long progress, long total) {
+        BigDecimal bd = new BigDecimal(progress).divide(BigDecimal.valueOf(total), 2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+        Platform.runLater(() -> this.progress.set(bd.doubleValue()));
+    }
+
+    public SimpleObjectProperty<TransferState> stateProperty() {
+        return state;
+    }
+
+    public SimpleDoubleProperty progressProperty() {
+        return progress;
     }
 
     @Override
@@ -106,6 +119,7 @@ public class FileTransfer {
                 ", progress=" + progress +
                 '}';
     }
+
 
     public enum TransferState {
         PENDING,

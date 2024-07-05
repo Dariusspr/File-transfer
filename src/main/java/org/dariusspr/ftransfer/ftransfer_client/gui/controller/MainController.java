@@ -1,5 +1,7 @@
 package org.dariusspr.ftransfer.ftransfer_client.gui.controller;
 
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -13,6 +15,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import org.dariusspr.ftransfer.ftransfer_client.Launcher;
+import org.dariusspr.ftransfer.ftransfer_client.data.FileTransfer;
 import org.dariusspr.ftransfer.ftransfer_client.service.SenderManager;
 import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
@@ -56,18 +59,27 @@ public class MainController implements Initializable {
     private final SenderManager senderManager = SenderManager.get();
 
     private Map<File, Node> selectedFileComponentsMap;
+    private Map<FileTransfer, Node> fileTransferNodeMap;
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        selectedFileComponentsMap = new HashMap<>();
-
-        ClientLocalData clientLocalData = ClientLocalData.getData();
-        selectedReceivers = clientLocalData.getSelectedReceivers();
         makeDraggable(bar, getPrimaryStage());
 
         btnClose.setOnMouseClicked(e -> ClientApplication.close());
 
         initializeComboBox();
+
+        btnAddFiles.setOnMouseClicked(this::addFiles);
+
+        btnSend.setOnMouseClicked(this::send);
+
+
+        selectedFileComponentsMap = new HashMap<>();
+        fileTransferNodeMap = new HashMap<>();
+
+        ClientLocalData clientLocalData = ClientLocalData.getData();
+        selectedReceivers = clientLocalData.getSelectedReceivers();
 
         selectedFiles = clientLocalData.getSelectedFiles();
         selectedFiles.addListener((ListChangeListener<File>) change -> {
@@ -85,9 +97,27 @@ public class MainController implements Initializable {
             }
         });
 
-        btnAddFiles.setOnMouseClicked(this::addFiles);
+        ObservableList<FileTransfer> fileTransfers = clientLocalData.getAllFileTransfers();
+        fileTransfers.addListener((ListChangeListener<FileTransfer>) change -> {
+            while(change.next()) {
+                if (change.wasAdded()) {
+                    for (FileTransfer transfer : change.getAddedSubList()) {
+                        createFileTransferComponent(transfer);
+                    }
+                } else if (change.wasRemoved()) {
+                    for (FileTransfer fileTransfer : change.getRemoved()) {
+                        removeFileTransferComponent(fileTransfer);
+                    }
+                }
+            }
+        });
 
-        btnSend.setOnMouseClicked(this::send);
+    }
+
+    private void removeFileTransferComponent(FileTransfer fileTransfer) {
+        Node component = fileTransferNodeMap.get(fileTransfer);
+        fileContainer.getChildren().remove(component);
+        fileTransferNodeMap.remove(fileTransfer);
     }
 
     private void send(MouseEvent mouseEvent) {
@@ -149,6 +179,31 @@ public class MainController implements Initializable {
             }
         });
     }
+
+    private void createFileTransferComponent(FileTransfer fileTransfer) {
+        FXMLLoader fxmlLoader = new FXMLLoader(Launcher.class.getResource("fileTransfer-component.fxml"));
+        Node component;
+        try {
+            component = fxmlLoader.load();
+            TransferController controller = fxmlLoader.getController();
+            controller.setFile(fileTransfer.isFile());
+            controller.setName(fileTransfer.getName());
+            controller.setSize(fileTransfer.getSize());
+            controller.setFromTo(fileTransfer.getFromTo());
+            controller.setUnits(fileTransfer.getUnit());
+
+            SimpleDoubleProperty progressProperty = fileTransfer.progressProperty();
+            controller.setProgressProperty(progressProperty);
+            SimpleObjectProperty<FileTransfer.TransferState> stateProperty = fileTransfer.stateProperty();
+            controller.setStateProperty(stateProperty);
+
+            fileContainer.getChildren().add(component);
+            fileTransferNodeMap.put(fileTransfer, component);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     private void updateReceiversMenu(ObservableList<ClientInfo> receivers) {
         btnReceivers.getItems().clear();

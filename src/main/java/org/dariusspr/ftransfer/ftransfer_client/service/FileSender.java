@@ -1,5 +1,8 @@
 package org.dariusspr.ftransfer.ftransfer_client.service;
 
+import javafx.application.Platform;
+import javafx.fxml.FXML;
+import org.dariusspr.ftransfer.ftransfer_client.data.FileTransfer;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileInput;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileMetaData;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileProcessor;
@@ -10,6 +13,10 @@ import java.net.Socket;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Timer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class FileSender implements Runnable {
     private ArrayList<ClientInfo> receivers;
@@ -20,11 +27,18 @@ public class FileSender implements Runnable {
 
     private final FileProcessor fileProcessor;
 
-    // TODO: later on: if directory, use multithreading to reduce some time
     // TODO: later on: implement pause/resume, cancel
+    private final File rootFile;
+    private final static int PROGRESS_UPDATE_FREQ = 1000; // in ms
+    private final FileTransfer transferInfo;
+    private  long bytesSent;
+    private final long bytesToSend;
 
     public FileSender(File rootFile) {
+        this.rootFile = rootFile;
         fileProcessor = new FileProcessor(rootFile);
+        this.transferInfo = new FileTransfer();
+        bytesToSend = fileProcessor.getMetaData().size();
     }
 
     @Override
@@ -39,35 +53,53 @@ public class FileSender implements Runnable {
         sendAll(metaData);
 
         Path absoluteParent = fileProcessor.getLocalParentPath();
-        for (String path : filePaths) {
-            Path localPath = absoluteParent.resolve(path);
+        bytesSent = 0;
 
-            if (localPath.toFile().isDirectory()) {
-                sendAll("d:" + path);
-                continue;
-            } else {
-                sendAll("f:" + path);
-            }
+        transferInfo.setState(FileTransfer.TransferState.SENDING);
+        try (ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor()) {
+            scheduler.scheduleAtFixedRate(
+                    this::updateTransferProgress,
+                    PROGRESS_UPDATE_FREQ, PROGRESS_UPDATE_FREQ,
+                    TimeUnit.MICROSECONDS);
 
-            try (final FileInput fileInput = new FileInput()) {
-                fileInput.setFile(localPath);
-                byte[] chunks;
-                while ((chunks = fileInput.readChunks()) != null) {
-                    sendAll(chunks);
+            for (String path : filePaths) {
+                Path localPath = absoluteParent.resolve(path);
+
+                if (localPath.toFile().isDirectory()) {
+                    sendAll("d:" + path);
+                    continue;
+                } else {
+                    sendAll("f:" + path);
                 }
-            } catch (FileNotFoundException e) {
-                // TODO:
-                System.err.println(localPath + " was not found");
-            } catch (Exception e) {
-                // TODO:
-                System.err.println("Failed to read " + path);
+                ;
+                try (final FileInput fileInput = new FileInput()) {
+                    fileInput.setFile(localPath);
+                    byte[] chunks;
+                    while ((chunks = fileInput.readChunks()) != null) {
+                        sendAll(chunks);
+                        bytesSent += chunks.length;
+
+                    }
+                } catch (FileNotFoundException e) {
+                    // TODO:
+                    System.err.println(localPath + " was not found");
+                } catch (Exception e) {
+                    // TODO:
+                    System.err.println("Failed to read " + path);
+                }
             }
         }
 
         sendAll("end");
-
+        transferInfo.setProgress(bytesToSend, bytesToSend);
+        transferInfo.setState(FileTransfer.TransferState.SENT);
         SenderManager.get().closeSender(this);
     }
+
+    private void updateTransferProgress() {
+        transferInfo.setProgress(bytesSent, bytesToSend);
+    }
+
 
     private void sendAll(Object object){
 
@@ -178,5 +210,25 @@ public class FileSender implements Runnable {
 
     public void setReceivers(ArrayList<ClientInfo> receivers) {
         this.receivers = receivers;
+    }
+
+    public void setTransferInfo() {
+        transferInfo.setFile(!rootFile.isDirectory());
+        transferInfo.setName(rootFile.getName());
+        transferInfo.setState(FileTransfer.TransferState.PENDING);
+        transferInfo.setSize(bytesToSend);
+        transferInfo.setProgress(0, bytesToSend);
+        StringBuilder stringBuilder = new StringBuilder("To ");
+        for (int i  = 0; i < receivers.size(); i++) {
+            stringBuilder.append(receivers.get(i).getName());
+            if (i != receivers.size() - 1) {
+                stringBuilder.append(", ");
+            }
+        }
+        transferInfo.setFromTo(stringBuilder.toString());
+    }
+
+    public FileTransfer getTransferInfo() {
+        return transferInfo;
     }
 }

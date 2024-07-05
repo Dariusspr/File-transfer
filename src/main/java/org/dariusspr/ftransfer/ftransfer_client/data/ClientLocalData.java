@@ -1,7 +1,6 @@
 package org.dariusspr.ftransfer.ftransfer_client.data;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 
@@ -48,4 +47,7 @@ public class ClientLocalData {
         return selectedFiles;
     }
 
+    public ObservableList<FileTransfer> getAllFileTransfers() {
+        return allFileTransfers;
+    }
 }
