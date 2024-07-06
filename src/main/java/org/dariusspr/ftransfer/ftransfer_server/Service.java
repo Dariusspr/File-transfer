@@ -28,7 +28,7 @@ public class Service {
         }
 
         try {
-            serverSocket = new ServerSocket(ServerInfo.defaultPort);
+            serverSocket = new ServerSocket(ServerInfo.getPort());
         } catch (IOException e) {
             // TODO: exception reporting
             e.printStackTrace();

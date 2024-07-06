@@ -7,7 +7,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="223.0" prefWidth="325.0" style="-fx-background-radius: 15; -fx-background-color: #282828;" xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dariusspr.ftransfer.ftransfer_client.gui.controller.LauncherController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="223.0" prefWidth="325.0" style="-fx-background-radius: 15; -fx-background-color: #282828;" xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dariusspr.ftransfer.ftransfer_client.gui.controller.ServerSettingsController">
    <children>
       <AnchorPane fx:id="bar" prefHeight="38.0" prefWidth="341.0">
          <children>
@@ -21,12 +21,11 @@
       </AnchorPane>
       <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="171.0" prefWidth="321.0" style="-fx-background-radius: 15; -fx-background-color: #282828;">
          <children>
-            <TextField fx:id="tfPort" layoutX="85.0" layoutY="50.0" promptText="port number" text="8888" />
-            <TextField fx:id="tfName" layoutX="85.0" layoutY="14.0" promptText="client name" />
-            <Button fx:id="btnLaunch" layoutX="85.0" layoutY="93.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="171.0" style="-fx-background-color: white;" text="Launch" />
-            <Button fx:id="btnServerSettings" layoutX="85.0" layoutY="134.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="171.0" style="-fx-background-color: #282828;" text="Server settings" textFill="#8d8787">
+            <TextField fx:id="tfPort" layoutX="85.0" layoutY="62.0" promptText="Server port" text="9000" />
+            <TextField fx:id="tfIp" layoutX="85.0" layoutY="14.0" promptText="Server ip" text="localhost" />
+            <Button fx:id="btnSave" layoutX="85.0" layoutY="108.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="171.0" style="-fx-background-color: white;" text="Save">
                <font>
-                  <Font size="16.0" />
+                  <Font size="14.0" />
                </font></Button>
          </children>
       </AnchorPane>

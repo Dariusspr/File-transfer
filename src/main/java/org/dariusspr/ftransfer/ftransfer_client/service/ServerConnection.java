@@ -46,7 +46,7 @@ public class ServerConnection {
     }
 
     private void initConnection() throws IOException {
-        socket = new Socket(ServerInfo.defaultIp, ServerInfo.defaultPort);
+        socket = new Socket(ServerInfo.getIp(), ServerInfo.getPort());
         objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
         objectInputStream = new ObjectInputStream(socket.getInputStream());
     }

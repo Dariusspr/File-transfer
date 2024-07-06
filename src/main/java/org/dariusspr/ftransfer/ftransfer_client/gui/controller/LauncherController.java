@@ -1,6 +1,8 @@
 package org.dariusspr.ftransfer.ftransfer_client.gui.controller;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
@@ -8,6 +10,9 @@ import javafx.scene.layout.AnchorPane;
 
 
 import javafx.fxml.Initializable;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+import org.dariusspr.ftransfer.ftransfer_client.Launcher;
 import org.dariusspr.ftransfer.ftransfer_client.service.ReceiverServer;
 import org.dariusspr.ftransfer.ftransfer_client.service.ServerConnection;
 import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
@@ -16,6 +21,7 @@ import org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication;
 import org.dariusspr.ftransfer.ftransfer_client.gui.SceneType;
 
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -44,6 +50,9 @@ public class LauncherController implements Initializable {
     @FXML
     private Button btnClose;
 
+    @FXML
+    private Button btnServerSettings;
+
     private ClientInfo clientInfo;
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -55,6 +64,21 @@ public class LauncherController implements Initializable {
         clientInfo.setIp(getLocalIp());
 
         btnLaunch.setOnMouseClicked(this::launch);
+
+        btnServerSettings.setOnMouseClicked(this::openServerSettings);
+    }
+
+    private void openServerSettings(MouseEvent mouseEvent) {
+        Stage stage =ClientApplication.getSecondaryStage();
+        FXMLLoader fxmlLoader = new FXMLLoader(Launcher.class.getResource("serverSettings-view.fxml"));
+        try {
+            Scene scene = new Scene(fxmlLoader.load());
+            scene.setFill(Color.TRANSPARENT);
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void launch(MouseEvent mouseEvent) {

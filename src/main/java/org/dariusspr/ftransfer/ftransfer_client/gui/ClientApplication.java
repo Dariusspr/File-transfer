@@ -67,8 +67,13 @@ public class ClientApplication extends Application {
     }
 
     public static Stage getSecondaryStage() {
-        return secondaryStage == null ? secondaryStage = new Stage() : secondaryStage;}
-
+        return secondaryStage == null ? secondaryStage = initSecondaryStage() : secondaryStage;
+    }
+    private static Stage initSecondaryStage() {
+        Stage stage = new Stage();
+        stage.initStyle(StageStyle.TRANSPARENT);
+        return  stage;
+    }
     private static Scene getLauncherScene() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Launcher.class.getResource("launch-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
@@ -81,4 +86,5 @@ public class ClientApplication extends Application {
         scene.setFill(Color.TRANSPARENT);
         return  scene;
     }
+
 }
