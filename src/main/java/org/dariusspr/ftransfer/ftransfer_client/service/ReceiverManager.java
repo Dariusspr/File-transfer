@@ -39,4 +39,8 @@ public class ReceiverManager {
         }
         activeReceivers.clear();
     }
+
+    public void deleteSender(FileReceiver fileReceiver) {
+        ClientLocalData.getData().getAllFileTransfers().remove(fileReceiver.getTransfer());
+    }
 }

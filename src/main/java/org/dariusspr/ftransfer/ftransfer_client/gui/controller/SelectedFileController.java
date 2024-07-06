@@ -1,10 +1,8 @@
 package org.dariusspr.ftransfer.ftransfer_client.gui.controller;
 
-import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
-import javafx.scene.control.Tooltip;
 import javafx.scene.text.Text;
 import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
 
@@ -24,7 +22,7 @@ public class SelectedFileController implements Initializable {
     private File file;
     private String shortName;
 
-    public void setFileName(File file) {
+    public void setFile(File file) {
         this.file = file;
         String name = file.getName();
 
@@ -43,7 +41,7 @@ public class SelectedFileController implements Initializable {
             ClientLocalData.getData().getSelectedFiles().remove(file);
         });
 
-        txtName.hoverProperty().addListener((ChangeListener<Boolean>) (observable, oldValue, newValue) -> {
+        txtName.hoverProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 txtName.setText(file.getAbsolutePath());
             } else {

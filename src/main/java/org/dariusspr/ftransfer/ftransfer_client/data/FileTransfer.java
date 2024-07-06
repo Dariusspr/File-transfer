@@ -17,8 +17,9 @@ public class FileTransfer {
     private double size;
     private String unit;
     private final SimpleDoubleProperty progress = new SimpleDoubleProperty();
-
-    public FileTransfer() {
+    private FileTransferManager manager;
+    public FileTransfer(FileTransferManager manager) {
+        this.manager = manager;
     }
 
     public FileTransfer(boolean isFile, String fromTo, String name, TransferState state, float size, String unit, float progress) {
@@ -126,11 +127,17 @@ public class FileTransfer {
 
     public enum TransferState {
         PENDING,
+        PAUSED,
+        CANCELLED,
         SENT,
         RECEIVED,
         SENDING,
         RECEIVING,
         ERROR
+    }
+
+    public FileTransferManager getManager() {
+        return manager;
     }
 }
 

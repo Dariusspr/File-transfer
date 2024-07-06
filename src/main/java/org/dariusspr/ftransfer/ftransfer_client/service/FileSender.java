@@ -1,6 +1,7 @@
 package org.dariusspr.ftransfer.ftransfer_client.service;
 
 import org.dariusspr.ftransfer.ftransfer_client.data.FileTransfer;
+import org.dariusspr.ftransfer.ftransfer_client.data.FileTransferManager;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileInput;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileMetaData;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileProcessor;
@@ -15,7 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class FileSender implements Runnable {
+public class FileSender implements Runnable, FileTransferManager {
     private ArrayList<ClientInfo> receivers;
 
     private final ArrayList<Socket> sockets = new ArrayList<>();
@@ -27,16 +28,19 @@ public class FileSender implements Runnable {
 
     // TODO: later on: implement pause/resume, cancel
     private final File rootFile;
-    private final static int PROGRESS_UPDATE_FREQ = 1000; // in ms
+    private final static int PROGRESS_UPDATE_FREQ = 300; // in ms
     private final FileTransfer transfer;
     private  long bytesSent;
     private final long bytesToSend;
+
+    private volatile boolean isPaused;
+    private volatile boolean isCancelled;
 
     public FileSender(File rootFile, SenderManager senderManager) {
         this.rootFile = rootFile;
         fileProcessor = new FileProcessor(rootFile);
         this.senderManager = senderManager;
-        this.transfer = new FileTransfer();
+        this.transfer = new FileTransfer(this);
         bytesToSend = fileProcessor.getMetaData().size();
     }
 
@@ -59,7 +63,7 @@ public class FileSender implements Runnable {
             scheduler.scheduleAtFixedRate(
                     this::updateTransferProgress,
                     PROGRESS_UPDATE_FREQ, PROGRESS_UPDATE_FREQ,
-                    TimeUnit.MICROSECONDS);
+                    TimeUnit.MILLISECONDS);
 
             for (String path : filePaths) {
                 Path localPath = absoluteParent.resolve(path);
@@ -75,6 +79,13 @@ public class FileSender implements Runnable {
                     fileInput.setFile(localPath);
                     byte[] chunks;
                     while ((chunks = fileInput.readChunks()) != null) {
+                        while(isPaused && !isCancelled) {
+                            Thread.onSpinWait();
+                        }
+                        if (isCancelled) {
+                            cancelSending();
+                            return;
+                        }
                         sendAll(chunks);
                         bytesSent += chunks.length;
 
@@ -96,6 +107,14 @@ public class FileSender implements Runnable {
         senderManager.closeSender(this);
     }
 
+    private void cancelSending() {
+        sendAll("cancel");
+        transfer.setState(FileTransfer.TransferState.CANCELLED);
+        updateTransferProgress();
+        senderManager.closeSender(this);
+        System.out.println("Not closed");
+    }
+
     private void updateTransferProgress() {
         transfer.setProgress(bytesSent, bytesToSend);
     }
@@ -114,7 +133,10 @@ public class FileSender implements Runnable {
                 stream.flush();
 
                 byte status = dataInputStreams.get(index).readByte();
-                if (status != 1) {
+                if (status == 15) { // Cancel
+                    isCancelled = true;
+                }
+                else if (status != 1) {
                     // TODO:
                     System.err.println("Response error");
                     handleSocketError(index, iterator);
@@ -212,7 +234,7 @@ public class FileSender implements Runnable {
         this.receivers = receivers;
     }
 
-    public void setTransferInfo() {
+    public void initTransfer() {
         transfer.setFile(!rootFile.isDirectory());
         transfer.setName(rootFile.getName());
         transfer.setState(FileTransfer.TransferState.PENDING);
@@ -230,5 +252,26 @@ public class FileSender implements Runnable {
 
     public FileTransfer getTransfer() {
         return transfer;
+    }
+
+    @Override
+    public void setPaused(boolean isPaused) {
+        if (isPaused) {
+            transfer.setState(FileTransfer.TransferState.PAUSED);
+        } else {
+            transfer.setState(FileTransfer.TransferState.SENDING);
+        }
+        this.isPaused = isPaused;
+    }
+
+    @Override
+    public void cancel() {
+        isCancelled = true;
+    }
+
+    @Override
+    public void delete() {
+        isCancelled = true;
+        senderManager.deleteSender(this);
     }
 }

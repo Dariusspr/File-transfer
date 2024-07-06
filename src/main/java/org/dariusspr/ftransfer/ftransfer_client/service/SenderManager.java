@@ -33,7 +33,7 @@ public class SenderManager {
             //TODO:
             return;
         }
-        senders.forEach(FileSender::setTransferInfo);
+        senders.forEach(FileSender::initTransfer);
 
         ClientLocalData clientLocalData = ClientLocalData.getData();
         senders.forEach(sender -> clientLocalData.getAllFileTransfers()
@@ -65,5 +65,10 @@ public class SenderManager {
         for (FileSender sender : senders) {
             sender.setReceivers(receivers);
         }
+    }
+
+    public void deleteSender(FileSender fileSender)
+    {
+        ClientLocalData.getData().getAllFileTransfers().remove(fileSender.getTransfer());
     }
 }

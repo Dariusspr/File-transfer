@@ -10,6 +10,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
@@ -142,7 +143,7 @@ public class MainController implements Initializable {
         try {
             component = fxmlLoader.load();
             SelectedFileController controller = fxmlLoader.getController();
-            controller.setFileName(file);
+            controller.setFile(file);
 
             fpSelectedFiles.getChildren().add(component);
             selectedFileComponentsMap.put(file, component);
@@ -185,17 +186,10 @@ public class MainController implements Initializable {
         Node component;
         try {
             component = fxmlLoader.load();
-            TransferController controller = fxmlLoader.getController();
-            controller.setFile(fileTransfer.isFile());
-            controller.setName(fileTransfer.getName());
-            controller.setSize(fileTransfer.getSize());
-            controller.setFromTo(fileTransfer.getFromTo());
-            controller.setUnits(fileTransfer.getUnit());
 
-            SimpleDoubleProperty progressProperty = fileTransfer.progressProperty();
-            controller.setProgressProperty(progressProperty);
-            SimpleObjectProperty<FileTransfer.TransferState> stateProperty = fileTransfer.stateProperty();
-            controller.setStateProperty(stateProperty);
+
+            TransferController controller = fxmlLoader.getController();
+            controller.init(fileTransfer);
 
             Platform.runLater(() ->fileContainer.getChildren().add(component));
             fileTransferNodeMap.put(fileTransfer, component);
@@ -203,6 +197,8 @@ public class MainController implements Initializable {
             throw new RuntimeException(e);
         }
     }
+
+
 
 
     private void updateReceiversMenu(ObservableList<ClientInfo> receivers) {

@@ -1,6 +1,7 @@
 package org.dariusspr.ftransfer.ftransfer_client.service;
 
 import org.dariusspr.ftransfer.ftransfer_client.data.FileTransfer;
+import org.dariusspr.ftransfer.ftransfer_client.data.FileTransferManager;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileOutput;
 import org.dariusspr.ftransfer.ftransfer_client.io.FileMetaData;
 
@@ -10,7 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class FileReceiver {
+public class FileReceiver implements FileTransferManager {
     private final ReceiverManager manager = ReceiverManager.get();
     private final ReceiverManager receiverManager;
     private FileMetaData metaData;
@@ -23,6 +24,8 @@ public class FileReceiver {
 
     private final Thread receiveThread = new Thread(this::receive);
     private  volatile boolean isFinished;
+    private  volatile  boolean isCancelled;
+    private  volatile  boolean isPaused;
 
     private final static int PROGRESS_UPDATE_FREQ = 1000; // in ms
 
@@ -37,16 +40,23 @@ public class FileReceiver {
         }
 
         try (ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor()) {
-            scheduler.scheduleAtFixedRate(this::updateTransferProgress,
-                PROGRESS_UPDATE_FREQ, PROGRESS_UPDATE_FREQ,
-                TimeUnit.MICROSECONDS);
+            scheduler.scheduleAtFixedRate(
+                    this::updateTransferProgress,
+                    PROGRESS_UPDATE_FREQ, PROGRESS_UPDATE_FREQ,
+                    TimeUnit.MILLISECONDS);
+
 
             while (!isFinished) {
                 try {
+                    while (isPaused && !isCancelled) {
+                        Thread.onSpinWait();
+                    }
                     Object object = objectInputStream.readObject();
 
                     if (handleReceivedObject(object)) {
                         dataOutputStream.writeByte(1);
+                    } else if (isCancelled){
+                        dataOutputStream.writeByte(15);
                     } else {
                         dataOutputStream.writeByte(0);
                     }
@@ -74,6 +84,11 @@ public class FileReceiver {
                     bytesToReceive = bytesReceived;
                     updateTransferProgress();
                     transfer.setState(FileTransfer.TransferState.RECEIVED);
+                } else if (readableMessage.equalsIgnoreCase("cancel")) {
+                    isCancelled = true;
+                    isFinished = true;
+                    transfer.setState(FileTransfer.TransferState.CANCELLED);
+                    updateTransferProgress();
                 }
                 else {
                     System.err.println("Invalid readableMessage: '" + readableMessage + "'");
@@ -81,7 +96,7 @@ public class FileReceiver {
             }
             case FileMetaData metadataMessage -> {
                 metaData = metadataMessage;
-                initFileTransfer();
+                initTransfer();
             }
             case byte[] dataMessage -> {
                 fileOutput.append(dataMessage);
@@ -153,8 +168,8 @@ public class FileReceiver {
         transfer.setProgress(bytesReceived, bytesToReceive);
     }
 
-    private void initFileTransfer() {
-        transfer = new FileTransfer();
+    private void initTransfer() {
+        transfer = new FileTransfer(this);
         transfer.setState(FileTransfer.TransferState.RECEIVING);
         bytesToReceive = metaData.size();
         transfer.setSize(bytesToReceive);
@@ -168,5 +183,27 @@ public class FileReceiver {
     }
     public FileTransfer getTransfer() {
         return transfer;
+    }
+
+
+    @Override
+    public void setPaused(boolean isPaused) {
+        if (isPaused) {
+            transfer.setState(FileTransfer.TransferState.PAUSED);
+        } else {
+            transfer.setState(FileTransfer.TransferState.RECEIVED);
+        }
+        this.isPaused = isPaused;
+    }
+
+    @Override
+    public void cancel() {
+        isCancelled = true;
+    }
+
+    @Override
+    public void delete() {
+        isCancelled = true;
+        receiverManager.deleteSender(this);
     }
 }
