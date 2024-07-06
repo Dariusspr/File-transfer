@@ -23,6 +23,7 @@ import static org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication.get
 import static org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication.setScene;
 import static org.dariusspr.ftransfer.ftransfer_client.gui.utils.AlertUtils.createErrorAlert;
 import static org.dariusspr.ftransfer.ftransfer_client.gui.utils.StageUtils.makeDraggable;
+import static org.dariusspr.ftransfer.ftransfer_client.service.ServerConnection.getLocalIp;
 
 public class LauncherController implements Initializable {
 
@@ -30,8 +31,6 @@ public class LauncherController implements Initializable {
     @FXML
     private AnchorPane bar;
 
-    @FXML
-    private TextField tfIP;
 
     @FXML
     private TextField tfName;
@@ -53,6 +52,8 @@ public class LauncherController implements Initializable {
         btnClose.setOnMouseClicked(e -> ClientApplication.close());
 
         clientInfo = new ClientInfo();
+        clientInfo.setIp(getLocalIp());
+
         btnLaunch.setOnMouseClicked(this::launch);
     }
 
@@ -76,7 +77,6 @@ public class LauncherController implements Initializable {
 
     private boolean readClientInfo() {
         String name = tfName.getText();
-        String ip = tfIP.getText();
         int port;
         try {
             port = Integer.parseInt(tfPort.getText());
@@ -85,11 +85,11 @@ public class LauncherController implements Initializable {
         }
 
         clientInfo.setName(name);
-        clientInfo.setIp(ip);
         clientInfo.setPort(port);
-
         return ClientInfo.isValid(clientInfo);
     }
+
+
 
 }
 

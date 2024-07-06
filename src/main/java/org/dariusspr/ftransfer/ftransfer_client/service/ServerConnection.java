@@ -5,7 +5,9 @@ import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 import org.dariusspr.ftransfer.ftransfer_common.ServerInfo;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class ServerConnection {
@@ -95,5 +97,16 @@ public class ServerConnection {
         return isRunning;
     }
 
+
+    public static String getLocalIp() {
+        InetAddress localHost = null;
+        try {
+            localHost = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+        String ipAddress = localHost.getHostAddress();
+        return ipAddress;
+    }
 }
 
