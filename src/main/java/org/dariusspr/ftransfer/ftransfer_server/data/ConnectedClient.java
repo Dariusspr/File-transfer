@@ -37,12 +37,17 @@ public class ConnectedClient {
 
     public void close() {
         try {
-            objectInputStream.close();
-            objectOutputStream.close();
-            outputStream.close();
-            socket.close();
+            if (objectOutputStream != null) {
+                objectOutputStream.close();
+            }
+            if (objectInputStream != null) {
+                objectInputStream.close();
+            }
+            if (socket != null) {
+                socket.close();
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Connection was already closed");
         }
     }
 
