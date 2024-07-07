@@ -43,7 +43,7 @@
             </Button>
          </children>
       </HBox>
-      <VBox prefWidth="1019.0" spacing="10.0">
+      <VBox prefWidth="1019.0" spacing="5.0">
          <padding>
             <Insets left="10.0" right="5.0" />
          </padding>
@@ -71,7 +71,7 @@
                   <Insets right="10.0" />
                </VBox.margin>
             </HBox>
-            <ScrollPane hbarPolicy="NEVER" maxHeight="110.0">
+            <ScrollPane hbarPolicy="NEVER" maxHeight="110.0" minHeight="0.0" minWidth="0.0" styleClass="transparent-scroll-pane" stylesheets="@style.css">
                <content>
                   <FlowPane fx:id="fpSelectedFiles" hgap="20.0" prefWidth="1004.0" vgap="10.0" />
                </content>
@@ -158,7 +158,7 @@
                   </Pane>
                </children>
             </HBox>
-            <ScrollPane hbarPolicy="NEVER" maxHeight="300.0" prefWidth="1004.0">
+            <ScrollPane hbarPolicy="NEVER" maxHeight="300.0" minHeight="0.0" minWidth="0.0" prefWidth="1004.0" styleClass="transparent-scroll-pane" stylesheets="@style.css">
                <VBox.margin>
                   <Insets top="15.0" />
                </VBox.margin>
