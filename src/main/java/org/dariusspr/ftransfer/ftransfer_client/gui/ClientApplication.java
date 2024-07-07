@@ -81,7 +81,9 @@ public class ClientApplication extends Application {
         if (serverConnection.isRunning()) {
             serverConnection.stop();
         }
-        ReceiverServer.get().stop();
+        if (ReceiverServer.get().isRunning()) {
+            ReceiverServer.get().stop();
+        }
         SenderManager.get().stop();
         primaryStage.close();
     }

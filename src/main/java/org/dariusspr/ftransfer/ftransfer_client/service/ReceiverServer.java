@@ -53,6 +53,9 @@ public class ReceiverServer {
         }
     }
 
+    public boolean isRunning() {
+        return isRunning;
+    }
     public void stop() {
         if (!isRunning) {
             throw new IllegalStateException("Receiver server  is not running");
