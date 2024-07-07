@@ -2,7 +2,6 @@ package org.dariusspr.ftransfer.ftransfer_client.service;
 
 import javafx.application.Platform;
 import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
-import org.dariusspr.ftransfer.ftransfer_client.data.FileTransfer;
 
 import java.net.Socket;
 import java.util.ArrayList;
@@ -23,14 +22,13 @@ public class ReceiverManager {
         activeReceivers.add(fileSender);
     }
 
-
     public void closeReceiver(FileReceiver receiver) {
         receiver.close();
         activeReceivers.remove(receiver);
     }
 
     public void addTransfer(FileReceiver receiver) {
-        Platform.runLater(() ->clientLocalData.getAllFileTransfers().add(receiver.getTransfer()));
+        Platform.runLater(() -> clientLocalData.getAllFileTransfers().add(receiver.getTransfer()));
     }
 
     public void closeAll() {

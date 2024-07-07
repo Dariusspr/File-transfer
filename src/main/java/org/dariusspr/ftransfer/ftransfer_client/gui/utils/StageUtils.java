@@ -6,7 +6,7 @@ import javafx.stage.Stage;
 
 public class StageUtils {
     public static void makeDraggable(final Node node, Stage stage) {
-        final DeltaPos  deltaPos = new DeltaPos();
+        final DeltaPos deltaPos = new DeltaPos();
         node.setOnMousePressed(mouseEvent -> {
             deltaPos.x = stage.getX() - mouseEvent.getScreenX();
             deltaPos.y = stage.getY() - mouseEvent.getScreenY();
@@ -21,5 +21,8 @@ public class StageUtils {
             node.setCursor(Cursor.DEFAULT);
         });
     }
-    static class DeltaPos {double x, y;}
+
+    static class DeltaPos {
+        double x, y;
+    }
 }

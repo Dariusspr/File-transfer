@@ -1,8 +1,6 @@
 package org.dariusspr.ftransfer.ftransfer_client.io;
 
-
 import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -12,8 +10,7 @@ import java.util.ArrayList;
 public class FileProcessor {
     private FileMetaData metaData;
     private final Path localParentPath;
-
-    private long size = 0;
+    private long size;
     private final ArrayList<String> fileTree = new ArrayList<>();
 
     public FileProcessor(File file) {
@@ -24,33 +21,7 @@ public class FileProcessor {
     private void generateMetaData(File rootFile) {
         if (rootFile.isDirectory()) {
 
-            Path rootPathParent = rootFile.getParentFile().toPath();
-            FileVisitor<Path> fileVisitor = new FileVisitor<Path>() {
-                @Override
-                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                    Path path = rootPathParent.relativize(dir);
-                    fileTree.add(path.toString());
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Path path = rootPathParent.relativize(file);
-                    fileTree.add(path.toString());
-                    size += file.toFile().length();
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    return FileVisitResult.CONTINUE;
-                }
-            };
+            FileVisitor<Path> fileVisitor = initFileVisitor(rootFile);
 
             try {
                 Files.walkFileTree(rootFile.toPath(), fileVisitor);
@@ -63,7 +34,38 @@ public class FileProcessor {
             fileTree.add(rootFile.toPath().getFileName().toString());
         }
         String sender = ClientLocalData.getData().getInfo().getName();
+
         metaData = new FileMetaData(sender, fileTree, size);
+    }
+
+    private FileVisitor<Path> initFileVisitor(File rootFile) {
+        Path rootPathParent = rootFile.getParentFile().toPath();
+        return new FileVisitor<>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+                Path path = rootPathParent.relativize(dir);
+                fileTree.add(path.toString());
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                Path path = rootPathParent.relativize(file);
+                fileTree.add(path.toString());
+                size += file.toFile().length();
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+                return FileVisitResult.CONTINUE;
+            }
+        };
     }
 
     public FileMetaData getMetaData() {

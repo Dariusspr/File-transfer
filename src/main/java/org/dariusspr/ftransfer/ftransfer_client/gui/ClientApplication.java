@@ -7,7 +7,6 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.dariusspr.ftransfer.ftransfer_client.Launcher;
-import org.dariusspr.ftransfer.ftransfer_client.data.FileTransfer;
 import org.dariusspr.ftransfer.ftransfer_client.service.ReceiverServer;
 import org.dariusspr.ftransfer.ftransfer_client.service.SenderManager;
 import org.dariusspr.ftransfer.ftransfer_client.service.ServerConnection;
@@ -19,19 +18,18 @@ public class ClientApplication extends Application {
     private static Stage secondaryStage;
 
 
+    public static void start() {
+        launch();
+    }
+
     @Override
-    public void start(Stage aStage) {
-        primaryStage = aStage;
+    public void start(Stage stage) {
+        primaryStage = stage;
         primaryStage.initStyle(StageStyle.TRANSPARENT);
 
         setScene(SceneType.LAUNCHER);
         primaryStage.show();
     }
-
-    public static void start() {
-        launch();
-    }
-
 
     public static void setScene(SceneType type) {
         try {
@@ -43,48 +41,48 @@ public class ClientApplication extends Application {
             } else {
                 throw new IllegalStateException("Illegal scene type");
             }
-            primaryStage.setScene((scene));
+            primaryStage.setScene(scene);
 
         } catch (IOException e) {
-            // TODO: improve exception handling
             e.printStackTrace();
         }
     }
 
+    private static Scene getLauncherScene() throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(Launcher.class.getResource("launch-view.fxml"));
+        Scene scene = new Scene(fxmlLoader.load());
+        scene.setFill(Color.TRANSPARENT);
+        return scene;
+    }
 
-
-    public static void close() {
-        if (ServerConnection.get().isRunning()) {
-            ServerConnection.get().stop();
-        }
-        ReceiverServer.get().stop();
-        SenderManager.get().stop();
-        primaryStage.close(); // TODO: proper way
+    private static Scene getMainScene() throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(Launcher.class.getResource("main-view.fxml"));
+        Scene scene = new Scene(fxmlLoader.load());
+        scene.setFill(Color.TRANSPARENT);
+        return scene;
     }
 
     public static Stage getPrimaryStage() {
         return primaryStage;
     }
 
-    public static Stage getSecondaryStage() {
-        return secondaryStage == null ? secondaryStage = initSecondaryStage() : secondaryStage;
-    }
     private static Stage initSecondaryStage() {
         Stage stage = new Stage();
         stage.initStyle(StageStyle.TRANSPARENT);
-        return  stage;
-    }
-    private static Scene getLauncherScene() throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(Launcher.class.getResource("launch-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load());
-        scene.setFill(Color.TRANSPARENT);
-        return  scene;
-    }
-    private static Scene getMainScene() throws IOException{
-        FXMLLoader fxmlLoader = new FXMLLoader(Launcher.class.getResource("main-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load());
-        scene.setFill(Color.TRANSPARENT);
-        return  scene;
+        return stage;
     }
 
+    public static Stage getSecondaryStage() {
+        return secondaryStage == null ? secondaryStage = initSecondaryStage() : secondaryStage;
+    }
+
+    public static void close() {
+        ServerConnection serverConnection = ServerConnection.get();
+        if (serverConnection.isRunning()) {
+            serverConnection.stop();
+        }
+        ReceiverServer.get().stop();
+        SenderManager.get().stop();
+        primaryStage.close();
+    }
 }

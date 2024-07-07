@@ -33,27 +33,21 @@ import static org.dariusspr.ftransfer.ftransfer_client.service.ServerConnection.
 
 public class LauncherController implements Initializable {
 
-
     @FXML
     private AnchorPane bar;
-
-
     @FXML
     private TextField tfName;
-
     @FXML
     private TextField tfPort;
-
     @FXML
     private Button btnLaunch;
-
     @FXML
     private Button btnClose;
-
     @FXML
     private Button btnServerSettings;
 
     private ClientInfo clientInfo;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         makeDraggable(bar, getPrimaryStage());
@@ -69,7 +63,7 @@ public class LauncherController implements Initializable {
     }
 
     private void openServerSettings(MouseEvent mouseEvent) {
-        Stage stage =ClientApplication.getSecondaryStage();
+        Stage stage = ClientApplication.getSecondaryStage();
         FXMLLoader fxmlLoader = new FXMLLoader(Launcher.class.getResource("serverSettings-view.fxml"));
         try {
             Scene scene = new Scene(fxmlLoader.load());
@@ -83,7 +77,6 @@ public class LauncherController implements Initializable {
 
     private void launch(MouseEvent mouseEvent) {
         if (!readClientInfo()) {
-            // TODO: improve alerts - more details
             createErrorAlert("Invalid info", "Invalid client details");
             return;
         }
@@ -112,9 +105,6 @@ public class LauncherController implements Initializable {
         clientInfo.setPort(port);
         return ClientInfo.isValid(clientInfo);
     }
-
-
-
 }
 
 

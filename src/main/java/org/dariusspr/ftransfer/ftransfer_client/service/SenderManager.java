@@ -30,18 +30,21 @@ public class SenderManager {
     public void sendAll(ArrayList<ClientInfo> receivers) {
         setReceivers(receivers);
         if (senders.isEmpty() || receivers.isEmpty()) {
-            //TODO:
             return;
         }
-        senders.forEach(FileSender::initTransfer);
 
         ClientLocalData clientLocalData = ClientLocalData.getData();
+
+        // Prepare
+        senders.forEach(FileSender::initTransfer);
         senders.forEach(sender -> clientLocalData.getAllFileTransfers()
                         .add(sender.getTransfer()));
 
         for (FileSender fileSender : senders) {
             executor.submit(fileSender);
         }
+
+        // Clear senders(and selected files) list after submitting it for processing
         senders.clear();
         clientLocalData.getSelectedFiles().clear();
     }
@@ -57,7 +60,6 @@ public class SenderManager {
     }
 
     public void stop() {
-        // TODO: handle better(save current states?)
         executor.shutdown();
     }
 
@@ -67,8 +69,7 @@ public class SenderManager {
         }
     }
 
-    public void deleteSender(FileSender fileSender)
-    {
+    public void deleteSender(FileSender fileSender) {
         ClientLocalData.getData().getAllFileTransfers().remove(fileSender.getTransfer());
     }
 }

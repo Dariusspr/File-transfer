@@ -15,7 +15,6 @@ public class SelectedFileController implements Initializable {
 
     @FXML
     private Button btnDelete;
-
     @FXML
     private Text txtName;
 
@@ -24,15 +23,17 @@ public class SelectedFileController implements Initializable {
 
     public void setFile(File file) {
         this.file = file;
-        String name = file.getName();
+        setTxtNameField();
+    }
 
+    private void setTxtNameField() {
+        String name = file.getName();
         int baseNameIndex = name.lastIndexOf('/');
         shortName = baseNameIndex == -1 ? name : name.substring(baseNameIndex);
-        if (shortName.length() > 15) {
+        if (shortName.length() > 15) { // Shorten name
             shortName = shortName.substring(0, 10) + "...";
         }
         txtName.setText(shortName);
-
     }
 
     @Override
@@ -41,6 +42,7 @@ public class SelectedFileController implements Initializable {
             ClientLocalData.getData().getSelectedFiles().remove(file);
         });
 
+        // Show full file name on hover
         txtName.hoverProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 txtName.setText(file.getAbsolutePath());
@@ -48,6 +50,5 @@ public class SelectedFileController implements Initializable {
                 txtName.setText(shortName);
             }
         });
-
     }
 }

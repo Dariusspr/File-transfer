@@ -1,4 +1,5 @@
 package org.dariusspr.ftransfer.ftransfer_client.gui.controller;
+
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
@@ -7,43 +8,37 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
-import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
 import org.dariusspr.ftransfer.ftransfer_client.data.FileTransfer;
 
 import static org.dariusspr.ftransfer.ftransfer_client.data.FileTransfer.*;
 
 
 public class TransferController {
+
     @FXML
     private HBox container;
     @FXML
     private Text txtFileDir;
-
     @FXML
     private Text txtFromTo;
-
     @FXML
     private Text txtName;
-
     @FXML
     private Text txtProgress;
-
     @FXML
     private Text txtSize;
-
     @FXML
     private Text txtState;
-
     @FXML
     private Text txtUnits;
 
     private FileTransfer fileTransfer;
 
-    public void setFile(boolean isFile) {
+    public void setFileField(boolean isFile) {
         txtFileDir.setText(isFile ? "F" : "D");
     }
 
-    public void setFromTo(String fromTo) {
+    public void setFromToField(String fromTo) {
         String shortName = fromTo;
         if (fromTo.length() > 20) {
             shortName = shortName.substring(0, 20) + "...";
@@ -51,7 +46,7 @@ public class TransferController {
         txtFromTo.setText(shortName);
     }
 
-    public void setName(String name) {
+    public void setNameField(String name) {
         String shortName = name;
         if (name.length() > 16) {
             shortName = shortName.substring(0, 16) + "...";
@@ -59,15 +54,15 @@ public class TransferController {
         txtName.setText(shortName);
     }
 
-    public void setProgressProperty(SimpleDoubleProperty progress) {
+    public void bindProgressField(SimpleDoubleProperty progress) {
         txtProgress.textProperty().bind(progress.asString());
     }
 
-    public void setSize(double size) {
+    public void setSizeField(double size) {
         txtSize.setText(String.valueOf(size));
     }
 
-    public void setStateProperty(SimpleObjectProperty<TransferState> state) {
+    public void bindStateField(SimpleObjectProperty<TransferState> state) {
         txtState.textProperty().bind(state.asString());
     }
 
@@ -77,18 +72,13 @@ public class TransferController {
 
     public void init(FileTransfer fileTransfer) {
         this.fileTransfer = fileTransfer;
-        setFile(fileTransfer.isFile());
-        setName(fileTransfer.getName());
-        setSize(fileTransfer.getSize());
-        setFromTo(fileTransfer.getFromTo());
-        setUnits(fileTransfer.getUnit());
+        initFields();
 
-        SimpleDoubleProperty progressProperty = fileTransfer.progressProperty();
-        setProgressProperty(progressProperty);
-        SimpleObjectProperty<FileTransfer.TransferState> stateProperty = fileTransfer.stateProperty();
-        setStateProperty(stateProperty);
+        ContextMenu componentContextMenu = initComponentContextMenu();
+        addContextMenuToContainer(componentContextMenu);
+    }
 
-        ContextMenu componentContextMenu = initComponentCM();
+    private void addContextMenuToContainer(ContextMenu componentContextMenu) {
         container.setOnContextMenuRequested((ContextMenuEvent event) -> {
             if (componentContextMenu.getItems().size() != 1) {
                 MenuItem pauseResumeItem = componentContextMenu.getItems().getFirst();
@@ -113,7 +103,7 @@ public class TransferController {
                         deleteItem.setDisable(false);
                         pauseResumeItem.setText("Pause");
                     }
-                    case SENT, RECEIVED, ERROR , CANCELLED-> {
+                    case SENT, RECEIVED, ERROR, CANCELLED -> {
                         componentContextMenu.getItems().remove(pauseResumeItem);
                         componentContextMenu.getItems().remove(cancelItem);
                         deleteItem.setDisable(false);
@@ -122,20 +112,35 @@ public class TransferController {
             }
             componentContextMenu.show(container, event.getScreenX(), event.getScreenY());
         });
-
     }
 
-    private ContextMenu initComponentCM() {
-        ContextMenu cm = new ContextMenu();;
+    private void initFields() {
+        setFileField(fileTransfer.isFile());
+        setNameField(fileTransfer.getName());
+        setSizeField(fileTransfer.getSize());
+        setFromToField(fileTransfer.getFromTo());
+        setUnits(fileTransfer.getUnit());
+
+        SimpleDoubleProperty progressProperty = fileTransfer.progressProperty();
+        bindProgressField(progressProperty);
+        SimpleObjectProperty<FileTransfer.TransferState> stateProperty = fileTransfer.stateProperty();
+        bindStateField(stateProperty);
+    }
+
+    private ContextMenu initComponentContextMenu() {
+        ContextMenu cm = new ContextMenu();
+
         MenuItem item1 = new MenuItem("Pause");
         item1.setOnAction(eventHandler -> {
             System.out.println("Pause");
             fileTransfer.getManager().setPaused(item1.getText().equals("Pause"));
         });
+
         MenuItem item2 = new MenuItem("Cancel");
         item2.setOnAction(eventHandler -> {
-                fileTransfer.getManager().cancel();
+            fileTransfer.getManager().cancel();
         });
+
         MenuItem item3 = new MenuItem("Delete");
         item3.setOnAction(eventHandler -> {
             fileTransfer.getManager().delete();

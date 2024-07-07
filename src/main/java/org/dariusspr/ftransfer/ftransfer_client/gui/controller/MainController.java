@@ -1,8 +1,6 @@
 package org.dariusspr.ftransfer.ftransfer_client.gui.controller;
 
 import javafx.application.Platform;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -10,7 +8,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
@@ -37,88 +34,41 @@ public class MainController implements Initializable {
 
     @FXML
     private AnchorPane bar;
-
     @FXML
     private Button btnAddFiles;
-
     @FXML
     private Button btnClose;
-
     @FXML
     private Button btnSend;
-
     @FXML
     private VBox fileContainer;
-
     @FXML
-    private  MenuButton btnReceivers;
-
+    private MenuButton btnReceivers;
     @FXML
     private FlowPane fpSelectedFiles;
 
+    private final SenderManager senderManager = SenderManager.get();
     private ArrayList<ClientInfo> selectedReceivers;
     private ObservableList<File> selectedFiles;
-    private final SenderManager senderManager = SenderManager.get();
-
     private Map<File, Node> selectedFileComponentsMap;
     private Map<FileTransfer, Node> fileTransferNodeMap;
-
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         makeDraggable(bar, getPrimaryStage());
-
-        btnClose.setOnMouseClicked(e -> ClientApplication.close());
-
-        initializeComboBox();
-
-        btnAddFiles.setOnMouseClicked(this::addFiles);
-
-        btnSend.setOnMouseClicked(this::send);
-
-
-        selectedFileComponentsMap = new HashMap<>();
-        fileTransferNodeMap = new HashMap<>();
-
+        initComboBox();
+        initButtonEvents();
+        initComponentMaps();
         ClientLocalData clientLocalData = ClientLocalData.getData();
         selectedReceivers = clientLocalData.getSelectedReceivers();
-
-        selectedFiles = clientLocalData.getSelectedFiles();
-        selectedFiles.addListener((ListChangeListener<File>) change -> {
-            while(change.next()) {
-                if (change.wasRemoved()) {
-                    for (File file : change.getRemoved()) {
-                        removeSelectedFileComponent(file);
-                    }
-                }
-                else if (change.wasAdded()) {
-                    for (File file : change.getAddedSubList()) {
-                        createSelectedFileComponent(file);
-                    }
-                }
-            }
-        });
-
-        ObservableList<FileTransfer> fileTransfers = clientLocalData.getAllFileTransfers();
-        fileTransfers.addListener((ListChangeListener<FileTransfer>) change -> {
-            while(change.next()) {
-                if (change.wasAdded()) {
-                    for (FileTransfer transfer : change.getAddedSubList()) {
-                        createFileTransferComponent(transfer);
-                    }
-                } else if (change.wasRemoved()) {
-                    for (FileTransfer fileTransfer : change.getRemoved()) {
-                        Platform.runLater(() ->removeFileTransferComponent(fileTransfer));
-                    }
-                }
-            }
-        });
+        initSelectedFiles();
+        initFileTransfers();
     }
 
-    private void removeFileTransferComponent(FileTransfer fileTransfer) {
-        Node component = fileTransferNodeMap.get(fileTransfer);
-        fileContainer.getChildren().remove(component);
-        fileTransferNodeMap.remove(fileTransfer);
+    private void initButtonEvents() {
+        btnClose.setOnMouseClicked(e -> ClientApplication.close());
+        btnAddFiles.setOnMouseClicked(this::addFiles);
+        btnSend.setOnMouseClicked(this::send);
     }
 
     private void send(MouseEvent mouseEvent) {
@@ -135,6 +85,78 @@ public class MainController implements Initializable {
             return;
 
         selectedFiles.addAll(list);
+    }
+
+    private void initComponentMaps() {
+        selectedFileComponentsMap = new HashMap<>();
+        fileTransferNodeMap = new HashMap<>();
+    }
+
+    private void initFileTransfers() {
+        ClientLocalData clientLocalData = ClientLocalData.getData();
+        ObservableList<FileTransfer> fileTransfers = clientLocalData.getAllFileTransfers();
+        fileTransfers.addListener((ListChangeListener<FileTransfer>) change -> {
+            while (change.next()) {
+                if (change.wasAdded()) {
+                    for (FileTransfer transfer : change.getAddedSubList()) {
+                        createFileTransferComponent(transfer);
+                    }
+                } else if (change.wasRemoved()) {
+                    for (FileTransfer fileTransfer : change.getRemoved()) {
+                        Platform.runLater(() -> removeFileTransferComponent(fileTransfer));
+                    }
+                }
+            }
+        });
+    }
+
+    private void initSelectedFiles() {
+        ClientLocalData clientLocalData = ClientLocalData.getData();
+        selectedFiles = clientLocalData.getSelectedFiles();
+        selectedFiles.addListener((ListChangeListener<File>) change -> {
+            while (change.next()) {
+                if (change.wasRemoved()) {
+                    for (File file : change.getRemoved()) {
+                        removeSelectedFileComponent(file);
+                    }
+                } else if (change.wasAdded()) {
+                    for (File file : change.getAddedSubList()) {
+                        createSelectedFileComponent(file);
+                    }
+                }
+            }
+        });
+    }
+
+    private void initComboBox() {
+        ObservableList<ClientInfo> receivers = ClientLocalData.getData().getAvailableClients();
+        updateReceiversMenu(receivers);
+
+        // Update context menu items
+        receivers.addListener((ListChangeListener<ClientInfo>) change -> {
+            updateReceiversMenu(receivers);
+        });
+
+        // Update list of selected receivers
+        btnReceivers.setOnHiding(e -> {
+            selectedReceivers.clear();
+            for (var item : btnReceivers.getItems()) {
+                if (item instanceof ReceiverMenuItem menuItem) {
+                    if (menuItem.isSelected()) {
+                        ClientInfo info = (ClientInfo) menuItem.getUserData();
+                        selectedReceivers.add(info);
+                    }
+                }
+            }
+        });
+    }
+
+    private void updateReceiversMenu(ObservableList<ClientInfo> receivers) {
+        btnReceivers.getItems().clear();
+        for (ClientInfo receiver : receivers) {
+            ReceiverMenuItem menuItem = new ReceiverMenuItem(receiver);
+            btnReceivers.getItems().add(menuItem);
+        }
     }
 
     private void createSelectedFileComponent(File file) {
@@ -158,29 +180,6 @@ public class MainController implements Initializable {
         selectedFileComponentsMap.remove(file);
     }
 
-    private void initializeComboBox() {
-        ObservableList<ClientInfo> receivers = ClientLocalData.getData().getAvailableClients();
-        updateReceiversMenu(receivers);
-
-        // Update context menu items
-        receivers.addListener((ListChangeListener<ClientInfo>) change -> {
-            updateReceiversMenu(receivers);
-        });
-
-        // Update list of selected receivers
-        btnReceivers.setOnHiding(e ->{
-            selectedReceivers.clear();
-            for (var item : btnReceivers.getItems()) {
-                if (item instanceof ReceiverMenuItem menuItem) {
-                    if (menuItem.isSelected()) {
-                        ClientInfo info = (ClientInfo) menuItem.getUserData();
-                        selectedReceivers.add(info);
-                    }
-                }
-            }
-        });
-    }
-
     private void createFileTransferComponent(FileTransfer fileTransfer) {
         FXMLLoader fxmlLoader = new FXMLLoader(Launcher.class.getResource("fileTransfer-component.fxml"));
         Node component;
@@ -191,23 +190,16 @@ public class MainController implements Initializable {
             TransferController controller = fxmlLoader.getController();
             controller.init(fileTransfer);
 
-            Platform.runLater(() ->fileContainer.getChildren().add(component));
+            Platform.runLater(() -> fileContainer.getChildren().add(component));
             fileTransferNodeMap.put(fileTransfer, component);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-
-
-
-    private void updateReceiversMenu(ObservableList<ClientInfo> receivers) {
-        btnReceivers.getItems().clear();
-        for(ClientInfo receiver : receivers) {
-            ReceiverMenuItem menuItem = new ReceiverMenuItem(receiver);
-            btnReceivers.getItems().add(menuItem);
-        }
+    private void removeFileTransferComponent(FileTransfer fileTransfer) {
+        Node component = fileTransferNodeMap.get(fileTransfer);
+        fileContainer.getChildren().remove(component);
+        fileTransferNodeMap.remove(fileTransfer);
     }
-
-
 }

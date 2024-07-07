@@ -1,6 +1,5 @@
 package org.dariusspr.ftransfer.ftransfer_client.data;
 
-
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -9,15 +8,15 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 public class FileTransfer {
-
+    private FileTransferManager manager;
     private boolean isFile;
     private String fromTo;
     private String name;
-    private final SimpleObjectProperty<TransferState> state = new SimpleObjectProperty<>();
-    private double size;
     private String unit;
+    private final SimpleObjectProperty<TransferState> state = new SimpleObjectProperty<>();
     private final SimpleDoubleProperty progress = new SimpleDoubleProperty();
-    private FileTransferManager manager;
+    private double size;
+
     public FileTransfer(FileTransferManager manager) {
         this.manager = manager;
     }
@@ -70,15 +69,15 @@ public class FileTransfer {
 
     public void setSize(long size) {
         BigDecimal bd = new BigDecimal(size);
-        if (bd.compareTo(BigDecimal.valueOf(1024 * 1024 * 1024.0)) >= 0) {
+        if (bd.compareTo(BigDecimal.valueOf(1024 * 1024 * 1024.0)) >= 0) { // GB
             BigDecimal sizeInGB = bd.divide(BigDecimal.valueOf(1024 * 1024 * 1024.0), 1, RoundingMode.HALF_UP);
             this.size = sizeInGB.doubleValue();
             unit = "GB";
-        } else if (bd.compareTo(BigDecimal.valueOf(1024 * 1024.0)) >= 0) {
+        } else if (bd.compareTo(BigDecimal.valueOf(1024 * 1024.0)) >= 0) { // MB
             BigDecimal sizeInMB = bd.divide(BigDecimal.valueOf(1024 * 1024.0), 1, RoundingMode.HALF_UP);
             this.size = sizeInMB.doubleValue();
             unit = "MB";
-        } else {
+        } else { // KB
             BigDecimal sizeInKB = bd.divide(BigDecimal.valueOf(1024.0), 1, RoundingMode.HALF_UP);
             this.size = sizeInKB.doubleValue();
             unit = "KB";
@@ -123,7 +122,6 @@ public class FileTransfer {
                 ", progress=" + progress +
                 '}';
     }
-
 
     public enum TransferState {
         PENDING,

@@ -53,8 +53,11 @@ public class ClientInfo implements Serializable {
     }
 
     public static boolean isValid(ClientInfo clientInfo) {
-        // TODO: add better validation
-        return !(clientInfo.name.isEmpty() || clientInfo.ip.isEmpty() || clientInfo.port < 0 || clientInfo.port > 65535);
+        return !(clientInfo.name.isEmpty() || clientInfo.ip.isEmpty() || idValidPort(clientInfo.port));
+    }
+
+    private static boolean idValidPort(int port) {
+        return port < 0 || port > 65535;
     }
 
     @Override

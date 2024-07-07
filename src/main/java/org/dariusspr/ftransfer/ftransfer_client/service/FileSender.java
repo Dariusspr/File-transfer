@@ -26,9 +26,8 @@ public class FileSender implements Runnable, FileTransferManager {
     private final FileProcessor fileProcessor;
     private final SenderManager senderManager;
 
-    // TODO: later on: implement pause/resume, cancel
     private final File rootFile;
-    private final static int PROGRESS_UPDATE_FREQ = 300; // in ms
+    private final static int PROGRESS_UPDATE_FREQ = 300; // MILLISECONDS
     private final FileTransfer transfer;
     private  long bytesSent;
     private final long bytesToSend;
@@ -52,11 +51,7 @@ public class FileSender implements Runnable, FileTransferManager {
         prepareStreams();
 
         FileMetaData metaData = fileProcessor.getMetaData();
-        ArrayList<String> filePaths = metaData.fileTree();
         sendAll(metaData);
-
-        Path absoluteParent = fileProcessor.getLocalParentPath();
-        bytesSent = 0;
 
         transfer.setState(FileTransfer.TransferState.SENDING);
         try (ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor()) {
@@ -64,40 +59,7 @@ public class FileSender implements Runnable, FileTransferManager {
                     this::updateTransferProgress,
                     PROGRESS_UPDATE_FREQ, PROGRESS_UPDATE_FREQ,
                     TimeUnit.MILLISECONDS);
-
-            for (String path : filePaths) {
-                Path localPath = absoluteParent.resolve(path);
-
-                if (localPath.toFile().isDirectory()) {
-                    sendAll("d:" + path);
-                    continue;
-                } else {
-                    sendAll("f:" + path);
-                }
-                ;
-                try (final FileInput fileInput = new FileInput()) {
-                    fileInput.setFile(localPath);
-                    byte[] chunks;
-                    while ((chunks = fileInput.readChunks()) != null) {
-                        while(isPaused && !isCancelled) {
-                            Thread.onSpinWait();
-                        }
-                        if (isCancelled) {
-                            cancelSending();
-                            return;
-                        }
-                        sendAll(chunks);
-                        bytesSent += chunks.length;
-
-                    }
-                } catch (FileNotFoundException e) {
-                    // TODO:
-                    System.err.println(localPath + " was not found");
-                } catch (Exception e) {
-                    // TODO:
-                    System.err.println("Failed to read " + path);
-                }
-            }
+            sendingFiles();
         }
 
         sendAll("end");
@@ -105,6 +67,50 @@ public class FileSender implements Runnable, FileTransferManager {
         updateTransferProgress();
         transfer.setState(FileTransfer.TransferState.SENT);
         senderManager.closeSender(this);
+    }
+
+    private void sendingFiles() {
+        FileMetaData metaData = fileProcessor.getMetaData();
+        ArrayList<String> filePaths = metaData.fileTree();
+        Path absoluteParent = fileProcessor.getLocalParentPath();
+        for (String path : filePaths) {
+            Path localPath = absoluteParent.resolve(path);
+
+            boolean isDirectory = localPath.toFile().isDirectory();
+            sendInitialFileInfo(path, isDirectory);
+            if (isDirectory) {
+                continue;
+            }
+
+            try (final FileInput fileInput = new FileInput()) {
+                fileInput.setFile(localPath);
+                byte[] chunks;
+                while ((chunks = fileInput.readChunks()) != null) {
+                    while(isPaused && !isCancelled) {
+                        Thread.onSpinWait();
+                    }
+                    if (isCancelled) {
+                        cancelSending();
+                        return;
+                    }
+                    sendAll(chunks);
+                    bytesSent += chunks.length;
+
+                }
+            } catch (FileNotFoundException e) {
+                System.err.println(localPath + " was not found");
+            } catch (Exception e) {
+                System.err.println("Encountered an error while processing '" + path + "'");
+            }
+        }
+    }
+
+    private void sendInitialFileInfo(String path, boolean isDirectory) {
+        if (isDirectory) {
+            sendAll("d:" + path);
+        } else {
+            sendAll("f:" + path);
+        }
     }
 
     private void cancelSending() {
@@ -121,30 +127,25 @@ public class FileSender implements Runnable, FileTransferManager {
 
 
     private void sendAll(Object object){
-
         Iterator<ObjectOutputStream> iterator = objectOutputStreams.iterator();
         while (iterator.hasNext()) {
             ObjectOutputStream stream = iterator.next();
             int index = objectOutputStreams.indexOf(stream);
 
             try {
-
                 stream.writeObject(object);
                 stream.flush();
-
                 byte status = dataInputStreams.get(index).readByte();
                 if (status == 15) { // Cancel
                     isCancelled = true;
                 }
                 else if (status != 1) {
-                    // TODO:
-                    System.err.println("Response error");
+                    System.err.println("Invalid response");
                     handleSocketError(index, iterator);
                 }
 
             } catch (IOException e) {
-                // TODO:
-                System.err.println("Output error");
+                System.err.println("Encountered an error while sending object");
                 handleSocketError(index, iterator);
             }
         }
@@ -172,7 +173,6 @@ public class FileSender implements Runnable, FileTransferManager {
                 Socket socket = new Socket(client.getIp(), client.getPort());
                 sockets.add(socket);
             } catch (IOException e) {
-                // TODO:
                 System.err.println("Failed to connect to socket " + client.getName());
             }
         }
@@ -187,7 +187,6 @@ public class FileSender implements Runnable, FileTransferManager {
             dataInputStreams.add(dataInputStream);
             objectOutputStreams.add(objectOutputStream);
             } catch (IOException e) {
-                // TODO:
                 System.err.println("Failed to create streams for" + socket);
             }
         }
@@ -202,8 +201,6 @@ public class FileSender implements Runnable, FileTransferManager {
         if (index < 0 || index >= sockets.size()) {
             return;
         }
-
-        // TODO: handle exceptions
 
         if (dataInputStreams.get(index) != null) {
             try {

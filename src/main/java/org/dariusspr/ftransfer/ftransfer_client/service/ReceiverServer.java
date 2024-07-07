@@ -1,6 +1,7 @@
 package org.dariusspr.ftransfer.ftransfer_client.service;
 
 import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
+import org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -17,8 +18,7 @@ public class ReceiverServer {
     private volatile boolean isRunning = false;
     private final Thread listenerThread = new Thread(this::listen);
 
-    private ReceiverServer() {
-    }
+    private ReceiverServer() {}
 
     public static ReceiverServer get() {
         return server;
@@ -32,8 +32,8 @@ public class ReceiverServer {
         try {
             serverSocket = new ServerSocket(clientLocalData.getInfo().getPort());
         } catch (IOException e) {
-            // TODO: exception reporting
             e.printStackTrace();
+            ClientApplication.close();
         }
 
         isRunning = true;
@@ -47,14 +47,11 @@ public class ReceiverServer {
                 receiverManager.addReceiver(socket);
             } catch (IOException e) {
                 if (!serverSocket.isClosed()) {
-                    // TODO: exception reporting
                     e.printStackTrace();
                 }
             }
         }
     }
-
-
 
     public void stop() {
         if (!isRunning) {
@@ -66,7 +63,6 @@ public class ReceiverServer {
         try {
             serverSocket.close();
         } catch (IOException e) {
-            // TODO: exception reporting
             e.printStackTrace();
         }
     }

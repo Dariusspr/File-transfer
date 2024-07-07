@@ -9,7 +9,6 @@ public class ServerInfo {
     private static String serverIp = null;
     private static int serverPort = -1;
 
-
     public static String getIp() {
         return serverIp == null ? defaultIp :serverIp;
     }
@@ -18,8 +17,7 @@ public class ServerInfo {
         return serverPort == -1 ? defaultPort :serverPort;
     }
     private static final Pattern IP_PATTERN = Pattern.compile(
-            "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}" +
-                    "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+            "^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}$"
     );
 
     public static boolean isValid(String ip, int port) {
@@ -30,7 +28,7 @@ public class ServerInfo {
         return IP_PATTERN.matcher(ip).matches() || ip.equals("localhost");
     }
 
-    private static boolean isValidPort(int port) {
+    public static boolean isValidPort(int port) {
         try {
             return port >= 1 && port <= 65535;
         } catch (NumberFormatException e) {

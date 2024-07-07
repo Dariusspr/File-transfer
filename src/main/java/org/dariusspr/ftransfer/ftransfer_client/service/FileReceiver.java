@@ -22,18 +22,25 @@ public class FileReceiver implements FileTransferManager {
     private ObjectInputStream objectInputStream;
     private DataOutputStream dataOutputStream;
 
-    private final Thread receiveThread = new Thread(this::receive);
-    private  volatile boolean isFinished;
-    private  volatile  boolean isCancelled;
-    private  volatile  boolean isPaused;
+    private final Thread receiveThread = new Thread(this::initReceive);
+    private volatile boolean isFinished;
+    private volatile boolean isCancelled;
+    private volatile boolean isPaused;
 
-    private final static int PROGRESS_UPDATE_FREQ = 1000; // in ms
+    private final static int PROGRESS_UPDATE_FREQ = 1000; // MILLISECONDS
 
     private FileTransfer transfer;
     private long bytesReceived;
     private long bytesToReceive;
 
-    private void receive() {
+    public FileReceiver(Socket socket, ReceiverManager receiverManager) {
+        this.socket = socket;
+        isFinished = false;
+        this.receiverManager = receiverManager;
+        receiveThread.start();
+    }
+
+    private void initReceive() {
         if (!prepareStreams()) {
             manager.closeReceiver(this);
             return;
@@ -44,77 +51,9 @@ public class FileReceiver implements FileTransferManager {
                     this::updateTransferProgress,
                     PROGRESS_UPDATE_FREQ, PROGRESS_UPDATE_FREQ,
                     TimeUnit.MILLISECONDS);
-
-
-            while (!isFinished) {
-                try {
-                    while (isPaused && !isCancelled) {
-                        Thread.onSpinWait();
-                    }
-                    Object object = objectInputStream.readObject();
-
-                    if (handleReceivedObject(object)) {
-                        dataOutputStream.writeByte(1);
-                    } else if (isCancelled){
-                        dataOutputStream.writeByte(15);
-                    } else {
-                        dataOutputStream.writeByte(0);
-                    }
-
-                } catch (IOException e) {
-                    System.err.println("Failure while working with '" + fileOutput.getFile() + "'");
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+            receiving();
         }
         manager.closeReceiver(this);
-    }
-
-    private boolean handleReceivedObject(Object object) throws IOException {
-        switch (object) {
-            case String readableMessage -> {
-                if (readableMessage.startsWith("f:")) {
-                    fileOutput.setFile(readableMessage.substring(2));
-                } else if (readableMessage.startsWith("d:")) {
-                    FileOutput.createDirectory(readableMessage.substring(2));
-                } else if (readableMessage.equalsIgnoreCase("end")) {
-                    fileOutput.closeFile();
-                    isFinished = true;
-                    bytesToReceive = bytesReceived;
-                    updateTransferProgress();
-                    transfer.setState(FileTransfer.TransferState.RECEIVED);
-                } else if (readableMessage.equalsIgnoreCase("cancel")) {
-                    isCancelled = true;
-                    isFinished = true;
-                    transfer.setState(FileTransfer.TransferState.CANCELLED);
-                    updateTransferProgress();
-                }
-                else {
-                    System.err.println("Invalid readableMessage: '" + readableMessage + "'");
-                }
-            }
-            case FileMetaData metadataMessage -> {
-                metaData = metadataMessage;
-                initTransfer();
-            }
-            case byte[] dataMessage -> {
-                fileOutput.append(dataMessage);
-                bytesReceived += dataMessage.length;
-            }
-            case null, default -> {
-                System.err.println("Invalid passed object");
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public FileReceiver(Socket socket, ReceiverManager receiverManager) {
-        this.socket = socket;
-        isFinished = false;
-        this.receiverManager = receiverManager;
-        receiveThread.start();
     }
 
     private boolean prepareStreams() {
@@ -128,8 +67,89 @@ public class FileReceiver implements FileTransferManager {
         }
     }
 
+    private void receiving() {
+        while (!isFinished) {
+            try {
+                while (isPaused && !isCancelled) {
+                    Thread.onSpinWait();
+                }
+                Object object = objectInputStream.readObject();
+
+                if (isCancelled) {
+                    dataOutputStream.writeByte(15);
+                }
+                if (handleReceivedObject(object)) { // Valid message
+                    dataOutputStream.writeByte(1);
+                } else { // Invalid message
+                    dataOutputStream.writeByte(0);
+                }
+
+            } catch (IOException e) {
+                System.err.println("Encountered an error while processing file '" + fileOutput.getFile() + "'");
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private boolean handleReceivedObject(Object object) throws IOException {
+        switch (object) {
+            case String readableMessage -> {
+                handleReadableMessage(readableMessage);
+            }
+            case FileMetaData metadataMessage -> {
+                metaData = metadataMessage;
+                initTransfer();
+            }
+            case byte[] dataMessage -> {
+                fileOutput.append(dataMessage);
+                bytesReceived += dataMessage.length;
+            }
+            default -> {
+                System.err.println("Invalid received object");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void handleReadableMessage(String readableMessage) throws IOException {
+        if (readableMessage.startsWith("f:")) {
+            fileOutput.setFile(readableMessage.substring(2));
+        } else if (readableMessage.startsWith("d:")) {
+            FileOutput.createDirectory(readableMessage.substring(2));
+        } else if (readableMessage.equalsIgnoreCase("end")) {
+            fileOutput.closeFile();
+            isFinished = true;
+            bytesToReceive = bytesReceived;
+            updateTransferProgress();
+            transfer.setState(FileTransfer.TransferState.RECEIVED);
+        } else if (readableMessage.equalsIgnoreCase("cancel")) {
+            isCancelled = true;
+            isFinished = true;
+            transfer.setState(FileTransfer.TransferState.CANCELLED);
+            updateTransferProgress();
+        } else {
+            System.err.println("Invalid readableMessage: '" + readableMessage + "'");
+        }
+    }
+
+    private void initTransfer() {
+        transfer = new FileTransfer(this);
+        transfer.setState(FileTransfer.TransferState.RECEIVING);
+        bytesToReceive = metaData.size();
+        transfer.setSize(bytesToReceive);
+        String root = metaData.fileTree().getFirst();
+        transfer.setFile(!new File(root).isDirectory());
+        transfer.setName(root);
+        transfer.setFromTo("From " + metaData.sender());
+        transfer.setProgress(0, bytesToReceive);
+
+        receiverManager.addTransfer(this);
+    }
+
     public void close() {
-        isFinished = false;
+        isFinished = true;
         receiveThread.interrupt();
 
         try {
@@ -168,19 +188,7 @@ public class FileReceiver implements FileTransferManager {
         transfer.setProgress(bytesReceived, bytesToReceive);
     }
 
-    private void initTransfer() {
-        transfer = new FileTransfer(this);
-        transfer.setState(FileTransfer.TransferState.RECEIVING);
-        bytesToReceive = metaData.size();
-        transfer.setSize(bytesToReceive);
-        String root = metaData.fileTree().getFirst();
-        transfer.setFile(!new File(root).isDirectory());
-        transfer.setName(root);
-        transfer.setFromTo("From " + metaData.sender());
-        transfer.setProgress(0, bytesToReceive);
 
-        receiverManager.addTransfer(this);
-    }
     public FileTransfer getTransfer() {
         return transfer;
     }

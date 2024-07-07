@@ -1,6 +1,8 @@
 package org.dariusspr.ftransfer.ftransfer_client.service;
 
+import javafx.application.Application;
 import org.dariusspr.ftransfer.ftransfer_client.data.ClientLocalData;
+import org.dariusspr.ftransfer.ftransfer_client.gui.ClientApplication;
 import org.dariusspr.ftransfer.ftransfer_common.ClientInfo;
 import org.dariusspr.ftransfer.ftransfer_common.ServerInfo;
 
@@ -21,8 +23,7 @@ public class ServerConnection {
 
     private final ClientLocalData clientLocalData = ClientLocalData.getData();
 
-    private ServerConnection() {
-    }
+    private ServerConnection() {}
 
     public static ServerConnection get() {
         return serverConnection;
@@ -37,7 +38,6 @@ public class ServerConnection {
             register();
             listenThread.start();
         } catch (IOException e) {
-            //TODO:
             e.printStackTrace();
             return false;
         }
@@ -51,21 +51,20 @@ public class ServerConnection {
         objectInputStream = new ObjectInputStream(socket.getInputStream());
     }
 
+    private void register() throws IOException {
+        objectOutputStream.writeObject(clientLocalData.getInfo());
+        objectOutputStream.flush();
+    }
+
     private void listenForUpdates() {
         while (isRunning) {
             try {
                 Object object = objectInputStream.readObject();
-                if (object instanceof ArrayList<?> arrayList) {
-                    if (!arrayList.isEmpty() && arrayList.getFirst() instanceof ClientInfo) {
-                        @SuppressWarnings("unchecked") ArrayList<ClientInfo> newAvailableList = (ArrayList<ClientInfo>) arrayList;
-                        newAvailableList.removeIf(client -> client.toString().equals(clientLocalData.getInfo().toString()));
-                        clientLocalData.getAvailableClients().setAll(newAvailableList);
-                    }
-                }
+                handleClientInfo(object);
             } catch (IOException e) {
                 if (!socket.isClosed()) {
-                    // TODO:
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
+                    ClientApplication.close();
                 }
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
@@ -73,9 +72,14 @@ public class ServerConnection {
         }
     }
 
-    private void register() throws IOException {
-        objectOutputStream.writeObject(clientLocalData.getInfo());
-        objectOutputStream.flush();
+    private void handleClientInfo(Object object) {
+        if (object instanceof ArrayList<?> arrayList) {
+            if (!arrayList.isEmpty() && arrayList.getFirst() instanceof ClientInfo) {
+                @SuppressWarnings("unchecked") ArrayList<ClientInfo> newAvailableList = (ArrayList<ClientInfo>) arrayList;
+                newAvailableList.removeIf(client -> client.toString().equals(clientLocalData.getInfo().toString()));
+                clientLocalData.getAvailableClients().setAll(newAvailableList);
+            }
+        }
     }
 
     public void stop() {
@@ -97,9 +101,8 @@ public class ServerConnection {
         return isRunning;
     }
 
-
     public static String getLocalIp() {
-        InetAddress localHost = null;
+        InetAddress localHost;
         try {
             localHost = InetAddress.getLocalHost();
         } catch (UnknownHostException e) {
