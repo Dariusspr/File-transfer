@@ -11,7 +11,7 @@ import java.net.Socket;
 public class Service {
     private static final Service server = new Service();
     private volatile boolean isRunning = false;
-    private final Thread listenerThread = new Thread(this::listen);
+    private final Thread listenerThread = new Thread(this::listenForConnections);
     private ServerSocket serverSocket;
     private final ClientsManager clientsManager = ClientsManager.get();
 
@@ -30,27 +30,13 @@ public class Service {
         try {
             serverSocket = new ServerSocket(ServerInfo.getPort());
         } catch (IOException e) {
-            // TODO: exception reporting
             e.printStackTrace();
+            System.exit(-1);
         }
 
         clientsManager.start();
         isRunning = true;
         listenerThread.start();
-    }
-
-    public void listen() {
-        while (isRunning) {
-            try {
-                Socket socket = serverSocket.accept();
-                new Thread(() -> handleClientRegistration(socket)).start();
-            } catch (IOException e) {
-                if (!serverSocket.isClosed()) {
-                    // TODO: exception reporting
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     private void handleClientRegistration(Socket socket) {
@@ -66,7 +52,19 @@ public class Service {
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-            // TODO: improve
+        }
+    }
+
+    public void listenForConnections() {
+        while (isRunning) {
+            try {
+                Socket socket = serverSocket.accept();
+                new Thread(() -> handleClientRegistration(socket)).start();
+            } catch (IOException e) {
+                if (!serverSocket.isClosed()) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -80,7 +78,6 @@ public class Service {
         try {
             serverSocket.close();
         } catch (IOException e) {
-            // TODO: exception reporting
             e.printStackTrace();
         }
     }

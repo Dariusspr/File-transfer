@@ -18,8 +18,10 @@ public class ClientsManager {
     private volatile boolean isAdded, isRemoved;
 
     ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private static final long CONNECTION_CHECKING_FREQ = 1000; // in ms
+    private static final long CONNECTION_CHECKING_FREQ = 1000; // MILLISECONDS
 
+    private ClientsManager() {
+    }
 
     public static ClientsManager get() {
         return manager;
@@ -29,9 +31,8 @@ public class ClientsManager {
         if (isRunning) {
             throw new IllegalStateException("clients Manager is already running");
         }
-
         isRunning = true;
-        scheduler.scheduleAtFixedRate(this::checkAll, CONNECTION_CHECKING_FREQ, CONNECTION_CHECKING_FREQ, TimeUnit.MICROSECONDS);
+        scheduler.scheduleAtFixedRate(this::checkAllClients, CONNECTION_CHECKING_FREQ, CONNECTION_CHECKING_FREQ, TimeUnit.MILLISECONDS);
     }
 
 
@@ -52,30 +53,29 @@ public class ClientsManager {
         isRemoved = true;
     }
 
-
-    private ClientsManager() {
-    }
-
-    public void checkAll() {
+    // Ensure that the list of connected clients is up-to-date and notifies clients about changes.
+    public void checkAllClients() {
         if (isRunning && !connectedClients.isEmpty()) {
-
-            Iterator<ConnectedClient> iterator = connectedClients.iterator();
-            while (iterator.hasNext()) {
-                ConnectedClient client = iterator.next();
-                if (client.isDisconnected()) {
-                    removeClient(iterator, client);
-                }
-            }
-
+            pingAndRemoveDisconnected();
             if (isRemoved || isAdded) {
-                updateAll();
+                notifyClients();
                 isRemoved = false;
                 isAdded = false;
             }
         }
     }
 
-    private void updateAll() {
+    private void pingAndRemoveDisconnected() {
+        Iterator<ConnectedClient> iterator = connectedClients.iterator();
+        while (iterator.hasNext()) {
+            ConnectedClient client = iterator.next();
+            if (client.isDisconnected()) {
+                removeClient(iterator, client);
+            }
+        }
+    }
+
+    private void notifyClients() {
 
         ArrayList<ClientInfo> infoList = new ArrayList<>();
         Iterator<ConnectedClient> iterator = connectedClients.iterator();
@@ -90,6 +90,8 @@ public class ClientsManager {
             try {
                 client.getObjectOutputStream().writeObject(infoList);
             } catch (IOException e) {
+                e.printStackTrace();
+                removeClient(client);
                 // TODO;
             }
         }
